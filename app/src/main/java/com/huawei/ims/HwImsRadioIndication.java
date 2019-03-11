@@ -37,9 +37,6 @@ public class HwImsRadioIndication extends IRadioIndication.Stub {
     @Override
     public void UnsolMsg(int indicationType, int msgId, RILUnsolMsgPayload rilUnsolMsgPayload) {
         Log.e(LOG_TAG, "indicationType = " + indicationType + ", msgId = " + msgId);
-        switch (msgId) {
-
-        }
         // Huawei
     }
 

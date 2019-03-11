@@ -27,6 +27,7 @@ public class RilHolder {
     private static int nextSerial = -1;
     private final static ConcurrentHashMap<Integer, Integer> serialToSlot = new ConcurrentHashMap<>();
     private final static ConcurrentHashMap<Integer, Callback> callbacks = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<Integer, BlockingCallback> blocks = new ConcurrentHashMap<>();
 
     private RilHolder() {
     }
@@ -42,6 +43,32 @@ public class RilHolder {
     public static void triggerCB(int serial, @NonNull RadioResponseInfo radioResponseInfo, @Nullable RspMsgPayload rspMsgPayload) {
         Log.e(LOG_TAG, "Incoming response for slot " + serialToSlot.get(serial) + ", serial " + serial + ", radioResponseInfo " + radioResponseInfo + ", rspMsgPayload " + rspMsgPayload);
         Objects.requireNonNull(callbacks.get(serial)).run(radioResponseInfo, rspMsgPayload);
+    }
+
+    public static int prepareBlock(int slotId) {
+        BlockingCallback cb = new BlockingCallback();
+        int serial = callback(cb, slotId);
+        blocks.put(serial, cb);
+        return serial;
+    }
+
+    public interface Callback {
+        void run(@NonNull RadioResponseInfo radioResponseInfo, @Nullable RspMsgPayload rspMsgPayload);
+    }
+
+    /*
+     * It is safe to call this method multiple times, it will always return the same for the same serial.
+     */
+    public static RadioResponseInfo blockUntilComplete(int serial) {
+        if (!blocks.containsKey(serial)) {
+            return null;
+        }
+        try {
+            while (!Objects.requireNonNull(blocks.get(serial)).done)
+                Objects.requireNonNull(blocks.get(serial)).wait();
+        } catch (InterruptedException ignored) {
+        }
+        return Objects.requireNonNull(blocks.get(serial)).radioResponseInfo;
     }
 
     public synchronized IRadio getRadio(int slotId) {
@@ -69,14 +96,22 @@ public class RilHolder {
                 unsolCallbacks[slotId] = new HwImsRadioIndication();
                 radioImpls[slotId].setResponseFunctionsHuawei(responseCallbacks[slotId], unsolCallbacks[slotId]);
             } catch (RemoteException e) {
+                Log.e(LOG_TAG, "remoteexception getting serivce. will throw npe later ig.");
                 return null;
             }
         }
         return radioImpls[slotId];
     }
 
-    public interface Callback {
-        void run(@NonNull RadioResponseInfo radioResponseInfo, @Nullable RspMsgPayload rspMsgPayload);
+    private final static class BlockingCallback implements Callback {
+        private boolean done = false;
+        private RadioResponseInfo radioResponseInfo;
+
+        @Override
+        public void run(RadioResponseInfo radioResponseInfo, RspMsgPayload rspMsgPayload) {
+            this.radioResponseInfo = radioResponseInfo;
+            this.notify();
+        }
     }
 
 }

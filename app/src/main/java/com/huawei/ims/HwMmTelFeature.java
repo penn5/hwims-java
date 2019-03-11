@@ -1,10 +1,12 @@
 package com.huawei.ims;
 
+import android.annotation.NonNull;
 import android.os.RemoteException;
 import android.telephony.ims.ImsCallProfile;
 import android.telephony.ims.ImsReasonInfo;
 import android.telephony.ims.feature.CapabilityChangeRequest;
 import android.telephony.ims.feature.MmTelFeature;
+import android.telephony.ims.stub.ImsCallSessionImplBase;
 import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.util.Log;
 import android.util.SparseArray;
@@ -18,11 +20,7 @@ public class HwMmTelFeature extends MmTelFeature {
     private int mSlotId;
     private boolean mIsReady = false;
 
-
-    private HwMmTelFeature() {
-    } // Use getInstance.
-
-    private HwMmTelFeature(int slotId) {
+    private HwMmTelFeature(int slotId) { // Use getInstance(slotId)
         mSlotId = slotId;
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_LTE,
                 new MmTelFeature.MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
@@ -114,6 +112,11 @@ public class HwMmTelFeature extends MmTelFeature {
         }
         return new ImsCallProfile(callSessionType, callType);
         // Is this right?
+    }
+
+    @Override
+    public synchronized ImsCallSessionImplBase createCallSession(@NonNull ImsCallProfile profile) {
+        return new HwImsCallSession(mSlotId, profile);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.huawei.ims;
 
+import android.telephony.TelephonyManager;
 import android.telephony.ims.ImsService;
 import android.telephony.ims.feature.ImsFeature;
 import android.telephony.ims.feature.MmTelFeature;
@@ -10,20 +11,12 @@ import android.util.Log;
 public class HwImsService extends ImsService {
     private static final String LOG_TAG = "HwImsService";
     private static HwImsService mInstance = null;
-    public static String[] IMS_SERVICE_NAMES = {"rildi", "rildi2", "rildi3"};
     private final HwMmTelFeature[] mmTelFeatures = {null, null, null};
     private final HwImsRegistration[] registrations = {null, null, null};
     private final HwImsConfig[] configs = new HwImsConfig[3];
 
-    private int lastSerial = -1;
-
     public static HwImsService getInstance() {
         return mInstance;
-    }
-
-    public synchronized int getSerial() {
-        lastSerial += 1;
-        return lastSerial;
     }
 
     @Override
@@ -50,7 +43,7 @@ public class HwImsService extends ImsService {
     }
 
     public boolean supportsDualIms() {
-        return HwModemCapability.isCapabilitySupport(21);
+        return HwModemCapability.isCapabilitySupport(21) && getSystemService(TelephonyManager.class).getPhoneCount() > 1;
     }
 
     @Override

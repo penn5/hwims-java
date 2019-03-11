@@ -16,91 +16,45 @@
 // From aosp testapps
 package com.huawei.ims;
 
+import android.annotation.NonNull;
 import android.telephony.ims.stub.ImsConfigImplBase;
 
 import com.android.ims.ImsConfig;
 
-import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class HwImsConfig extends ImsConfigImplBase {
-    private static HwImsConfig sTestImsConfigImpl;
-    private ImsConfigListener mListener;
-    private final ArrayList<ConfigItem> mArrayOfConfigs = new ArrayList<>();
+    private final ConcurrentHashMap<Integer, Integer> configInt = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, String> configString = new ConcurrentHashMap<>();
 
-    public HwImsConfig() {
-        super();
-    }
-
-    public static HwImsConfig getInstance() {
-        if (sTestImsConfigImpl == null) {
-            sTestImsConfigImpl = new HwImsConfig();
-        }
-        return sTestImsConfigImpl;
-    }
-
-    public void setConfigListener(ImsConfigListener listener) {
-        mListener = listener;
-    }
-
-    public ArrayList<ConfigItem> getConfigList() {
-        return mArrayOfConfigs;
-    }
 
     @Override
     public int setConfig(int item, int value) {
-        replaceConfig(new ConfigItem(item, value));
+        configInt.put(item, value);
         return ImsConfig.OperationStatusConstants.SUCCESS;
     }
 
     @Override
     public int setConfig(int item, String value) {
-        replaceConfig(new ConfigItem(item, value));
+        configString.put(item, value);
         return ImsConfig.OperationStatusConstants.SUCCESS;
     }
 
     @Override
-    public int getConfigInt(int item) {
-        replaceConfig(new ConfigItem(item, ImsConfig.FeatureValueConstants.ON));
-        return ImsConfig.FeatureValueConstants.ON;
+    public int getConfigInt(@NonNull int item) {
+        if (configInt.containsKey(item)) {
+            return configInt.get(item);
+        } else {
+            return ImsConfig.FeatureValueConstants.ERROR;
+        }
     }
 
     @Override
     public String getConfigString(int item) {
-        return null;
-    }
-
-    public void setConfigValue(int item, int value) {
-        replaceConfig(new ConfigItem(item, value));
-        notifyProvisionedValueChanged(item, value);
-    }
-
-    public void replaceConfig(ConfigItem configItem) {
-        mArrayOfConfigs.stream()
-                .filter(configElem -> configElem.item == configItem.item)
-                .findFirst().ifPresent(mArrayOfConfigs::remove);
-        mArrayOfConfigs.add(configItem);
-        if (mListener != null) {
-            mListener.notifyConfigChanged();
-        }
-    }
-
-    public interface ImsConfigListener {
-        void notifyConfigChanged();
-    }
-
-    public static class ConfigItem {
-        public int item;
-        public int value;
-        public String valueString;
-
-        public ConfigItem(int item, int value) {
-            this.item = item;
-            this.value = value;
-        }
-
-        public ConfigItem(int item, String value) {
-            this.item = item;
-            valueString = value;
+        if (configString.containsKey(item)) {
+            return configString.get(item);
+        } else {
+            return null;
         }
     }
 }

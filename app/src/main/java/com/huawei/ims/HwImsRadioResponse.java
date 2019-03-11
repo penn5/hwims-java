@@ -93,14 +93,6 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
     public static final int PASS_2 = 0X35;
     public static final int PASS_3 = 0X36;*/
 
-    public void imsDialResponse(RadioResponseInfo radioResponseInfo) {
-
-    }
-
-    public void setImsCallWaitingResponse(RadioResponseInfo radioResponseInfo) {
-
-    }
-
     @Override
     public void deactivateDataCallEmergencyResponse(RadioResponseInfo radioResponseInfo) {
         // Huawei
