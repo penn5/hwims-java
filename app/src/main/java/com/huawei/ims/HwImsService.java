@@ -7,16 +7,13 @@ import android.telephony.ims.stub.ImsConfigImplBase;
 import android.telephony.ims.stub.ImsFeatureConfiguration;
 import android.util.Log;
 
-import java.util.ArrayList;
-
 public class HwImsService extends ImsService {
-    public static final String LOG_TAG = "HwImsService";
-    public static HwImsService mInstance = null;
-    public static ArrayList<HwImsService> mInstances = new ArrayList<>();
+    private static final String LOG_TAG = "HwImsService";
+    private static HwImsService mInstance = null;
     public static String[] IMS_SERVICE_NAMES = {"rildi", "rildi2", "rildi3"};
-    public HwMmTelFeature[] mmTelFeatures = {null, null, null};
-    public HwImsRegistration[] registrations = {null, null, null};
-    public HwImsConfig[] configs = new HwImsConfig[3];
+    private HwMmTelFeature[] mmTelFeatures = {null, null, null};
+    private HwImsRegistration[] registrations = {null, null, null};
+    private HwImsConfig[] configs = new HwImsConfig[3];
 
     private int lastSerial = -1;
 
@@ -82,5 +79,13 @@ public class HwImsService extends ImsService {
             configs[slotId] = new HwImsConfig();
         }
         return configs[slotId];
+    }
+
+    @Override
+    public HwImsRegistration getRegistration(int slotId) {
+        if (this.registrations[slotId] == null) {
+            registrations[slotId] = new HwImsRegistration();
+        }
+        return this.registrations[slotId];
     }
 }

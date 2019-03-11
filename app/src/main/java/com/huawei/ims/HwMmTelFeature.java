@@ -19,8 +19,7 @@ public class HwMmTelFeature extends MmTelFeature {
     private SparseArray<MmTelCapabilities> mEnabledCapabilities = new SparseArray<>();
 
 
-    public HwMmTelFeature() {
-        throw new RuntimeException();
+    private HwMmTelFeature() {
     } // Use getInstance.
 
     private HwMmTelFeature(int slotId) {
@@ -59,17 +58,17 @@ public class HwMmTelFeature extends MmTelFeature {
 
     public void registerIms() {
         try {
-            HwImsService.getInstance().registrations[mSlotId].onRegistering(HwImsRegistration.REGISTRATION_TECH_LTE);
+            HwImsService.getInstance().getRegistration(mSlotId).onRegistering(HwImsRegistration.REGISTRATION_TECH_LTE);
             RilHolder.INSTANCE.getRadio(mSlotId).imsRegister(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 Log.e(LOG_TAG, "CALLBACK CALLED!!!" + radioResponseInfo + rspMsgPayload);
                 if (radioResponseInfo.error != 0) {
                     Log.e(LOG_TAG, "radiorespinfo gives error " + radioResponseInfo.error);
-                    HwImsService.getInstance().registrations[mSlotId].onDeregistered(new ImsReasonInfo(ImsReasonInfo.CODE_UNSPECIFIED, radioResponseInfo.error, radioResponseInfo.toString() + rspMsgPayload.toString()));
+                    HwImsService.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo(ImsReasonInfo.CODE_UNSPECIFIED, radioResponseInfo.error, radioResponseInfo.toString() + rspMsgPayload.toString()));
                     throw new RuntimeException();
                 } else {
-                    HwImsService.getInstance().registrations[mSlotId].onRegistered(HwImsRegistration.REGISTRATION_TECH_LTE);
+                    HwImsService.getInstance().getRegistration(mSlotId).onRegistered(HwImsRegistration.REGISTRATION_TECH_LTE);
                 }
-            }));
+            }, mSlotId));
         } catch (RemoteException e) {
             Log.e(LOG_TAG, "error registering ims", e);
         }

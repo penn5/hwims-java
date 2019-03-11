@@ -25,19 +25,22 @@ public class RilHolder {
     private static HwImsRadioIndication[] unsolCallbacks = new HwImsRadioIndication[3];
     private static IRadio[] radioImpls = new IRadio[3];
     private static int nextSerial = -1;
+    private static ConcurrentHashMap<Integer, Integer> serialToSlot = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<Integer, Callback> callbacks = new ConcurrentHashMap<>();
 
     private RilHolder() {
     }
 
-    public synchronized static int callback(Callback cb) {
+    public synchronized static int callback(Callback cb, int slotId) {
         nextSerial += 1;
+        serialToSlot.put(nextSerial, slotId);
         callbacks.put(nextSerial, cb);
         Log.v(LOG_TAG, "Setting callback for serial " + nextSerial);
         return nextSerial;
     }
 
     public static void triggerCB(int serial, @NonNull RadioResponseInfo radioResponseInfo, @Nullable RspMsgPayload rspMsgPayload) {
+        Log.e(LOG_TAG, "Incoming response for slot " + serialToSlot.get(serial) + ", serial " + serial + ", radioResponseInfo " + radioResponseInfo + ", rspMsgPayload " + rspMsgPayload);
         Objects.requireNonNull(callbacks.get(serial)).run(radioResponseInfo, rspMsgPayload);
     }
 
