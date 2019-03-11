@@ -67,9 +67,8 @@ public class HwMmTelFeature extends MmTelFeature {
                     HwImsService.getInstance().registrations[mSlotId].onDeregistered(new ImsReasonInfo(ImsReasonInfo.CODE_UNSPECIFIED, radioResponseInfo.error, radioResponseInfo.toString() + rspMsgPayload.toString()));
                     throw new RuntimeException();
                 } else {
-                    HwImsService.getInstance().registrations[mSlotId].onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_LTE);
+                    HwImsService.getInstance().registrations[mSlotId].onRegistered(HwImsRegistration.REGISTRATION_TECH_LTE);
                 }
-                HwImsService.getInstance().registrations[mSlotId].onRegistered(HwImsRegistration.REGISTRATION_TECH_LTE);
             }));
         } catch (RemoteException e) {
             Log.e(LOG_TAG, "error registering ims", e);
