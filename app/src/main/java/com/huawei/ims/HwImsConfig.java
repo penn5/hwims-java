@@ -25,7 +25,7 @@ import java.util.ArrayList;
 public class HwImsConfig extends ImsConfigImplBase {
     private static HwImsConfig sTestImsConfigImpl;
     private ImsConfigListener mListener;
-    private ArrayList<ConfigItem> mArrayOfConfigs = new ArrayList<>();
+    private final ArrayList<ConfigItem> mArrayOfConfigs = new ArrayList<>();
 
     public HwImsConfig() {
         super();
@@ -75,12 +75,9 @@ public class HwImsConfig extends ImsConfigImplBase {
     }
 
     public void replaceConfig(ConfigItem configItem) {
-        ConfigItem config = mArrayOfConfigs.stream()
+        mArrayOfConfigs.stream()
                 .filter(configElem -> configElem.item == configItem.item)
-                .findFirst().orElse(null);
-        if (config != null) {
-            mArrayOfConfigs.remove(config);
-        }
+                .findFirst().ifPresent(mArrayOfConfigs::remove);
         mArrayOfConfigs.add(configItem);
         if (mListener != null) {
             mListener.notifyConfigChanged();

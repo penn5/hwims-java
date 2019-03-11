@@ -11,9 +11,9 @@ public class HwImsService extends ImsService {
     private static final String LOG_TAG = "HwImsService";
     private static HwImsService mInstance = null;
     public static String[] IMS_SERVICE_NAMES = {"rildi", "rildi2", "rildi3"};
-    private HwMmTelFeature[] mmTelFeatures = {null, null, null};
-    private HwImsRegistration[] registrations = {null, null, null};
-    private HwImsConfig[] configs = new HwImsConfig[3];
+    private final HwMmTelFeature[] mmTelFeatures = {null, null, null};
+    private final HwImsRegistration[] registrations = {null, null, null};
+    private final HwImsConfig[] configs = new HwImsConfig[3];
 
     private int lastSerial = -1;
 
@@ -29,11 +29,6 @@ public class HwImsService extends ImsService {
     @Override
     public void onCreate() {
         Log.v(LOG_TAG, "HwImsService created!");
-        if (mInstance != null) {
-//            throw new RuntimeException("This class may only be instantiated once!");
-        }
-        //mInstance = this;
-        //mInstances.add(this);
     }
 
     @Override
@@ -43,7 +38,7 @@ public class HwImsService extends ImsService {
 
     @Override
     public void disableIms(int slotId) {
-        //((HwMmTelFeature)createMmTelFeature(slotId)).unregisterIms();
+        ((HwMmTelFeature) createMmTelFeature(slotId)).unregisterIms();
     }
 
     @Override
@@ -54,14 +49,18 @@ public class HwImsService extends ImsService {
         mInstance = this;
     }
 
+    public boolean supportsDualIms() {
+        return HwModemCapability.isCapabilitySupport(21);
+    }
+
     @Override
     public ImsFeatureConfiguration querySupportedImsFeatures() {
-
-        return new ImsFeatureConfiguration.Builder()
-                .addFeature(0, ImsFeature.FEATURE_MMTEL)
-                .addFeature(1, ImsFeature.FEATURE_MMTEL)
-                .addFeature(2, ImsFeature.FEATURE_MMTEL)
-                .build();
+        ImsFeatureConfiguration.Builder builder = new ImsFeatureConfiguration.Builder()
+                .addFeature(0, ImsFeature.FEATURE_MMTEL); // assume it works.
+        if (supportsDualIms()) {
+            builder.addFeature(1, ImsFeature.FEATURE_MMTEL);
+        }
+        return builder.build();
     }
 
     @Override

@@ -19,14 +19,14 @@ import vendor.huawei.hardware.radio.V1_0.RspMsgPayload;
 
 public class RilHolder {
     private static final String LOG_TAG = "HwImsRilHolder";
-    public static RilHolder INSTANCE = new RilHolder();
-    private static String[] serviceNames = {"rildi", "rildi2", "rildi3"};
-    private static HwImsRadioResponse[] responseCallbacks = new HwImsRadioResponse[3];
-    private static HwImsRadioIndication[] unsolCallbacks = new HwImsRadioIndication[3];
-    private static IRadio[] radioImpls = new IRadio[3];
+    public final static RilHolder INSTANCE = new RilHolder();
+    private final static String[] serviceNames = {"rildi", "rildi2", "rildi3"};
+    private final static HwImsRadioResponse[] responseCallbacks = new HwImsRadioResponse[3];
+    private final static HwImsRadioIndication[] unsolCallbacks = new HwImsRadioIndication[3];
+    private final static IRadio[] radioImpls = new IRadio[3];
     private static int nextSerial = -1;
-    private static ConcurrentHashMap<Integer, Integer> serialToSlot = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<Integer, Callback> callbacks = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<Integer, Integer> serialToSlot = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<Integer, Callback> callbacks = new ConcurrentHashMap<>();
 
     private RilHolder() {
     }
