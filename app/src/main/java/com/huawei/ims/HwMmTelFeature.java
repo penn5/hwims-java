@@ -1,7 +1,8 @@
-package com.hwims;
+package com.huawei.ims;
 
 import android.os.RemoteException;
 import android.telephony.ims.ImsCallProfile;
+import android.telephony.ims.ImsReasonInfo;
 import android.telephony.ims.feature.CapabilityChangeRequest;
 import android.telephony.ims.feature.MmTelFeature;
 import android.telephony.ims.stub.ImsRegistrationImplBase;
@@ -11,24 +12,25 @@ import android.util.SparseArray;
 public class HwMmTelFeature extends MmTelFeature {
 
     private static HwMmTelFeature[] instances = {null, null, null};
+    private final String LOG_TAG = "HwImsMmTelFeatureImpl";
+    public boolean mIsReady = false;
     private int mSlotId;
-    private boolean mIsReady = false;
     // Enabled Capabilities - not status
     private SparseArray<MmTelCapabilities> mEnabledCapabilities = new SparseArray<>();
-    private final String LOG_TAG = "HwImsMmTelFeatureImpl";
 
 
+    public HwMmTelFeature() {
+        throw new RuntimeException();
+    } // Use getInstance.
 
-
-
-    private HwMmTelFeature() {} // Use getInstance.
     private HwMmTelFeature(int slotId) {
+        mSlotId = slotId;
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_LTE,
-                new MmTelCapabilities());
+                new MmTelFeature.MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
         // One day... :hearteyes:
-        //mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN,
-        //        new MmTelCapabilities());
-        setFeatureState(STATE_INITIALIZING);
+        mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN,
+                new MmTelCapabilities(0));
+        setFeatureState(STATE_READY);
     }
 
     public static HwMmTelFeature getInstance(int slotId) {
@@ -37,8 +39,6 @@ public class HwMmTelFeature extends MmTelFeature {
         }
         return instances[slotId];
     }
-
-
 
 
     @Override
@@ -57,6 +57,25 @@ public class HwMmTelFeature extends MmTelFeature {
         }
     }
 
+    public void registerIms() {
+        try {
+            HwImsService.getInstance().registrations[mSlotId].onRegistering(HwImsRegistration.REGISTRATION_TECH_LTE);
+            RilHolder.INSTANCE.getRadio(mSlotId).imsRegister(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
+                Log.e(LOG_TAG, "CALLBACK CALLED!!!" + radioResponseInfo + rspMsgPayload);
+                if (radioResponseInfo.error != 0) {
+                    Log.e(LOG_TAG, "radiorespinfo gives error " + radioResponseInfo.error);
+                    HwImsService.getInstance().registrations[mSlotId].onDeregistered(new ImsReasonInfo(ImsReasonInfo.CODE_UNSPECIFIED, radioResponseInfo.error, radioResponseInfo.toString() + rspMsgPayload.toString()));
+                    throw new RuntimeException();
+                } else {
+                    HwImsService.getInstance().registrations[mSlotId].onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_LTE);
+                }
+                HwImsService.getInstance().registrations[mSlotId].onRegistered(HwImsRegistration.REGISTRATION_TECH_LTE);
+            }));
+        } catch (RemoteException e) {
+            Log.e(LOG_TAG, "error registering ims", e);
+        }
+    }
+
     @Override
     public ImsCallProfile createCallProfile(int callSessionType, int callType) {
         if (callSessionType == ImsCallProfile.SERVICE_TYPE_EMERGENCY) {
@@ -64,12 +83,7 @@ public class HwMmTelFeature extends MmTelFeature {
         }
         if (callSessionType == ImsCallProfile.SERVICE_TYPE_NONE) {
             // Register IMS
-            try {
-                RilHolder.INSTANCE.getRadio(mSlotId).imsRegister(RilHolder.callback(() -> Log.e(LOG_TAG, "CALLBACK CALLED!!!")));
-            } catch (RemoteException e) {
-                Log.e(LOG_TAG, "error registering ims", e);
-                return null;
-            }
+            registerIms();
         }
         return new ImsCallProfile(callSessionType, callType);
         // Is this right?
@@ -77,13 +91,13 @@ public class HwMmTelFeature extends MmTelFeature {
 
     @Override
     public void onFeatureRemoved() {
-	mIsReady = false;
+        mIsReady = false;
         super.onFeatureRemoved();
     }
 
     @Override
     public void onFeatureReady() {
         mIsReady = true;
+        registerIms();
     }
-
 }

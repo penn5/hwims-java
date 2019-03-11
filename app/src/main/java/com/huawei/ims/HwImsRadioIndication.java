@@ -1,4 +1,4 @@
-package com.hwims;
+package com.huawei.ims;
 
 import android.hardware.radio.V1_0.CdmaCallWaiting;
 import android.hardware.radio.V1_0.CdmaInformationRecords;
@@ -14,6 +14,7 @@ import android.hardware.radio.V1_0.SignalStrength;
 import android.hardware.radio.V1_0.SimRefreshResult;
 import android.hardware.radio.V1_0.StkCcUnsolSsResult;
 import android.hardware.radio.V1_0.SuppSvcNotification;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -31,8 +32,14 @@ import vendor.huawei.hardware.radio.V1_0.RILVtFlowInfoReport;
 
 public class HwImsRadioIndication extends IRadioIndication.Stub {
 
+    private static final String LOG_TAG = "HwImsRadioIndication";
+
     @Override
     public void UnsolMsg(int indicationType, int msgId, RILUnsolMsgPayload rilUnsolMsgPayload) {
+        Log.e(LOG_TAG, "indicationType = " + indicationType + ", msgId = " + msgId);
+        switch (msgId) {
+
+        }
         // Huawei
     }
 

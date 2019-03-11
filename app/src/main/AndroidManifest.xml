@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     coreApp="true"
-    package="com.hwims"
-    android:sharedUserId="android.uid.phone"
-    android:versionCode="1"
-    android:versionName="1.0">
+    package="com.huawei.ims"
+    android:sharedUserId="android.uid.phone">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="false"
-        android:allowClearUserData="true">
+        android:allowClearUserData="true"
+        android:icon="@android:mipmap/sym_def_app_icon"
+        tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

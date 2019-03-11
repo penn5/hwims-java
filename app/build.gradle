@@ -1,19 +1,32 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'android'
+            keyPassword 'android'
+            storeFile file('/home/penn/platform.jks')
+            storePassword 'android'
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.hwims"
+        applicationId "com.huawei.ims"
         minSdkVersion 28
         targetSdkVersion 28
         versionCode 1
-        versionName "1.0"
+        versionName "alpha0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.config
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
     buildToolsVersion '28.0.3'
@@ -21,10 +34,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    productFlavors {
+    }
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     testImplementation 'junit:junit:4.12'
@@ -34,4 +48,5 @@ dependencies {
     compileOnly files('libs/framework.jar')
     compileOnly files('libs/ims-common.jar')
     compileOnly files('libs/telephony-common.jar')
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
 }

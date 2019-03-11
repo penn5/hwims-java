@@ -1,4 +1,4 @@
-package com.hwims;
+package com.huawei.ims;
 
 import android.hardware.radio.V1_0.ActivityStatsInfo;
 import android.hardware.radio.V1_0.Call;
@@ -22,8 +22,11 @@ import android.hardware.radio.V1_0.SendSmsResult;
 import android.hardware.radio.V1_0.SetupDataCallResult;
 import android.hardware.radio.V1_0.SignalStrength;
 import android.hardware.radio.V1_0.VoiceRegStateResult;
+import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Optional;
 
 import vendor.huawei.hardware.radio.V1_0.CsgNetworkInfo;
 import vendor.huawei.hardware.radio.V1_0.IRadioResponse;
@@ -36,9 +39,66 @@ import vendor.huawei.hardware.radio.V1_0.RILUICCAUTHRESPONSE;
 import vendor.huawei.hardware.radio.V1_0.RspMsgPayload;
 
 public class HwImsRadioResponse extends IRadioResponse.Stub {
+    private static final String LOG_TAG = "HwImsRadioResponse";
+
     @Override
-    public void RspMsg(RadioResponseInfo radioResponseInfo, int i, RspMsgPayload rspMsgPayload) {
+    public void RspMsg(RadioResponseInfo radioResponseInfo, int msgType, RspMsgPayload rspMsgPayload) {
+        Log.d(LOG_TAG, "rspmsg radioresponseinfo = " + radioResponseInfo + ",msgtype=" + msgType);
+        Log.d(LOG_TAG, "serial " + radioResponseInfo.serial);
+        Log.d(LOG_TAG, "type=" + RESP_CODE.getName(msgType));
+        /*switch (msgType) {
+            case PASS_1:
+            case PASS_2:
+            case PASS_3:
+                return;
+            case IMS_DIAL_RESPONSE:
+                imsDialResponse(radioResponseInfo);
+                break;
+            case SET_IMS_CALL_WAITING_RESPONSE:
+                setImsCallWaitingResponse(radioResponseInfo);
+                break;
+            case GET_LTE_INFO_RESPONSE:
+                getLteInfoResponse(radioResponseInfo);
+                break;
+            case ACCEPT_IMS_CALL_RESPONSE:
+                acceptImsCallResponse(radioResponseInfo);
+
+        }*/
         // Huawei
+        RilHolder.triggerCB(radioResponseInfo.serial, radioResponseInfo, rspMsgPayload);
+    }
+/*
+    public static final int IMS_DIAL_RESPONSE = 0XDC;
+    public static final int SET_IMS_CALL_WAITING_RESPONSE = 0X100;
+    public static final int GET_LTE_INFO_RESPONSE = 0X136;
+    public static final int ACCEPT_IMS_CALL_RESPONSE = 0XE7;
+    public static final int SET_DMPCSCF_RESPONSE = 0X13C;
+    public static final int SET_DMDYN_RESPONSE = 0X13D;
+    public static final int SET_DMTIMER_RESPONSE = 0X13E;
+    public static final int SET_DMSMS_RESPONSE = 0X13F;
+    public static final int GET_DMPCSCF_RESPONSE = 0X140;
+    public static final int GET_DMTIMER_RESPONSE = 0X141;
+    public static final int GET_DMDYN_RESPONSE = 0X142;
+    public static final int GET_DMSMS_RESPONSE = 0X143;
+    public static final int GET_DMUSER_RESPONSE = 0X144;
+    public static final int WIFI_EMERGENCY_AID = 0X151;
+    public static final int SEND_BATTERY_STATUS_RESPONSE = 0X147;
+    public static final int MODIFY_IMS_CALL_INITIATE_RESPONSE = 0X113;
+    public static final int MODIFY_IMS_CALL_CONFIRM_RESPONSE = 0X114;
+    public static final int GET_IMS_IMPU_RESPONSE = 0XF6;
+    public static final int SET_IMS_VT_CAPABILITY_RESPONSE = 0X150;
+    public static final int IMS_LAST_CALL_FAIL_REASON_INFO_RESPONSE = 0X14F;
+    public static final int SWITCH_WAITING_OR_HOLDING_AND_ACTIVE_FOR_IMS_RESPONSE = 0X156;
+    public static final int PASS_1 = 0XE3;
+    public static final int PASS_2 = 0X35;
+    public static final int PASS_3 = 0X36;*/
+
+    public void imsDialResponse(RadioResponseInfo radioResponseInfo) {
+
+    }
+
+    public void setImsCallWaitingResponse(RadioResponseInfo radioResponseInfo) {
+
     }
 
     @Override
@@ -738,6 +798,36 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
 
     @Override
     public void writeSmsToSimResponse(RadioResponseInfo radioResponseInfo, int i) {
+
+    }
+
+    public enum RESP_CODE {
+        IMS_DIAL_RESPONSE(0xdc), SET_IMS_CALL_WAITING_RESPONSE(0x100),
+        GET_LTE_INFO_RESPONSE(0x136), ACCEPT_IMS_CALL_RESPONSE(0xe7),
+        SET_DMPCSCF_RESPONSE(0x13c), SET_DMDYN_RESPONSE(0x13d),
+        SET_DMTIMER_RESPONSE(0x13e), SET_DMSMS_RESPONSE(0x13f),
+        GET_DMPCSCF_RESPONSE(0x140), GET_DMTIMER_RESPONSE(0x141),
+        GET_DMDYN_RESPONSE(0x142), GET_DMSMS_RESPONSE(0x143),
+        GET_DMUSER_RESPONSE(0x144), WIFI_EMERGENCY_AID(0x151),
+        SEND_BATTERY_STATUS_RESPONSE(0x147), MODIFY_IMS_CALL_INITIATE_RESPONSE(0x133),
+        MODIFY_IMS_CALL_CONFIRM_RESPONSE(0x114), GET_IMS_IMPU_RESPONSE(0xf6),
+        SET_IMS_VT_CAPABILITY_RESPONSE(0x150), IMS_LAST_CALL_FAIL_REASON_INFO_RESPONSE(0x14f),
+        SWITCH_WAITING_OR_HOLDING_AND_ACTIVE_FOR_IMS_RESPONSE(0x156),
+        PASS1(0xe3), PASS2(0x35), PASS3(0x36);
+        public int value;
+
+        RESP_CODE(int value) {
+            this.value = value;
+        }
+
+        public static String getName(int code) {
+            Optional<RESP_CODE> x = Arrays.stream(RESP_CODE.values()).filter(resp_code -> resp_code.value == code).findAny();
+            if (x.isPresent()) {
+                return x.get().name();
+            } else {
+                return Integer.toString(code);
+            }
+        }
 
     }
 
