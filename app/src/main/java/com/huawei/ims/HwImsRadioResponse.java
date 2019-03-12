@@ -22,6 +22,7 @@ import android.hardware.radio.V1_0.SendSmsResult;
 import android.hardware.radio.V1_0.SetupDataCallResult;
 import android.hardware.radio.V1_0.SignalStrength;
 import android.hardware.radio.V1_0.VoiceRegStateResult;
+import android.telephony.ims.ImsCallProfile;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -40,6 +41,11 @@ import vendor.huawei.hardware.radio.V1_0.RspMsgPayload;
 
 public class HwImsRadioResponse extends IRadioResponse.Stub {
     private static final String LOG_TAG = "HwImsRadioResponse";
+    private int mSlotId;
+
+    public HwImsRadioResponse(int slotId) {
+        mSlotId = slotId;
+    }
 
     @Override
     public void RspMsg(RadioResponseInfo radioResponseInfo, int msgType, RspMsgPayload rspMsgPayload) {
@@ -111,6 +117,22 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
     @Override
     public void getCurrentImsCallsResponse(RadioResponseInfo radioResponseInfo, ArrayList<RILImsCall> arrayList) {
         // Huawei
+        //TODO find the right way to do this, if there even is a better way
+        for (RILImsCall call : arrayList) {
+            Log.d(LOG_TAG, "calls list contains " + redactCall(call));
+            HwImsCallSession session = HwImsCallSession.awaitingIdFromRIL.get(call.number);
+            if (session != null) {
+                session.addIdFromRIL(call.index, call.number);
+            }
+            if (!HwImsCallSession.calls.containsKey(call.number)) {
+                new HwImsCallSession(mSlotId, new ImsCallProfile(), call.index).reject(0);
+                // TODO make a new call and inform the ims system via the right listener
+            }
+        }
+    }
+
+    private String redactCall(RILImsCall call) {
+        return "{.state = " + call.state + ", .index = " + call.index + ", .toa = " + call.toa + ", .isMpty = " + call.isMpty + ", .isMT = " + call.isMT + ", .als = " + call.als + ", .isVoice = " + call.isVoice + ", .isVoicePrivacy = " + call.isVoicePrivacy + ", .number = REDACTED, .numberPresentation = " + call.numberPresentation + ", .name = " + call.name + ", .namePresentation = " + call.namePresentation + ", .callDetails = " + call.callDetails.toString() + ", .isEConference = " + call.isECOnference + ", .peerVideoSupport = " + call.peerVideoSupport + "}";
     }
 
     @Override
@@ -147,6 +169,8 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
     public void uiccAuthResponse(RadioResponseInfo radioResponseInfo, RILUICCAUTHRESPONSE riluiccauthresponse) {
         // Huawei
     }
+
+    // END OF HUAWEI METHODS
 
     @Override
     public void acceptCallResponse(RadioResponseInfo radioResponseInfo) {
@@ -480,7 +504,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
 
     @Override
     public void rejectCallResponse(RadioResponseInfo radioResponseInfo) {
-
+        RspMsg(radioResponseInfo, -1, null);
     }
 
     @Override
@@ -823,7 +847,6 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
 
     }
 
-    // END OF HUAWEI METHODS
 
 
 }

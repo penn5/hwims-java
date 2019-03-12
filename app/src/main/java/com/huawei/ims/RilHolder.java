@@ -33,11 +33,15 @@ public class RilHolder {
     }
 
     public synchronized static int callback(Callback cb, int slotId) {
-        nextSerial += 1;
-        serialToSlot.put(nextSerial, slotId);
-        callbacks.put(nextSerial, cb);
-        Log.v(LOG_TAG, "Setting callback for serial " + nextSerial);
-        return nextSerial;
+        int serial = getNextSerial();
+        serialToSlot.put(serial, slotId);
+        callbacks.put(serial, cb);
+        Log.v(LOG_TAG, "Setting callback for serial " + serial);
+        return serial;
+    }
+
+    public synchronized static int getNextSerial() {
+        return ++nextSerial;
     }
 
     public static void triggerCB(int serial, @NonNull RadioResponseInfo radioResponseInfo, @Nullable RspMsgPayload rspMsgPayload) {
@@ -92,8 +96,8 @@ public class RilHolder {
                     android.os.Process.killProcess(android.os.Process.myPid());
                     // We're dead.
                 }
-                responseCallbacks[slotId] = new HwImsRadioResponse();
-                unsolCallbacks[slotId] = new HwImsRadioIndication();
+                responseCallbacks[slotId] = new HwImsRadioResponse(slotId);
+                unsolCallbacks[slotId] = new HwImsRadioIndication(slotId);
                 radioImpls[slotId].setResponseFunctionsHuawei(responseCallbacks[slotId], unsolCallbacks[slotId]);
             } catch (RemoteException e) {
                 Log.e(LOG_TAG, "remoteexception getting serivce. will throw npe later ig.");

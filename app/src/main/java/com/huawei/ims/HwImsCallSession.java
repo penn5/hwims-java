@@ -6,10 +6,12 @@ import android.telephony.Rlog;
 import android.telephony.ims.ImsCallProfile;
 import android.telephony.ims.ImsCallSessionListener;
 import android.telephony.ims.ImsReasonInfo;
+import android.telephony.ims.ImsStreamMediaProfile;
 import android.telephony.ims.stub.ImsCallSessionImplBase;
 import android.util.Log;
 
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import vendor.huawei.hardware.radio.V1_0.RILImsCallDomain;
 import vendor.huawei.hardware.radio.V1_0.RILImsCallType;
@@ -39,12 +41,34 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     private int mState = State.INVALID;
     private boolean mInCall = false;
 
+    public static ConcurrentHashMap<String, HwImsCallSession> awaitingIdFromRIL = new ConcurrentHashMap<String, HwImsCallSession>();
+    public static ConcurrentHashMap<String, HwImsCallSession> calls = new ConcurrentHashMap<>();
+    private final Object mCallIdLock = new Object();
+    public int mDirection = -1; // 0 is outgoing MO, 1 is incoming MT
+    private int mCallId = -1;
+
+    // For outgoing (MO) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile) {
         this.mSlotId = slotId;
         this.mProfile = new ImsCallProfile();
         this.mLocalProfile = new ImsCallProfile(profile.getServiceType(), profile.getCallType());
         this.mRemoteProfile = new ImsCallProfile(profile.getServiceType(), profile.getCallType());
         this.instance = instanceCount++;
+    }
+
+    // For incoming (MT) calls
+    public HwImsCallSession(int slotId, ImsCallProfile profile, int callId) {
+        this(slotId, profile);
+        this.mCallId = callId;
+    }
+
+    public void addIdFromRIL(int id, String number) {
+        if (awaitingIdFromRIL.remove(number, this)) {
+            synchronized (mCallIdLock) {
+                mCallId = id;
+                mCallIdLock.notify();
+            }
+        }
     }
 
     @Override
@@ -148,7 +172,14 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                 if (radioResponseInfo.error == 0) {
                     Rlog.e(LOG_TAG, "MADE AN IMS CALL OMG WOW");
                     Log.e(LOG_TAG, "MADE AN IMS CALL OMG WOW");
+                    awaitingIdFromRIL.put(callee, this);
+                    mInCall = true;
                     listener.callSessionInitiated(profile);
+                    try {
+                        getRilCallId();
+                    } catch (RemoteException e) {
+                        Rlog.e(LOG_TAG, "error getting current calls", e);
+                    }
                 } else {
                     Rlog.e(LOG_TAG, "Failed to make ims call :(");
                     Log.e(LOG_TAG, "failed to make ims call :(");
@@ -160,5 +191,69 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         }
     }
 
+    @Override
+    public void startConference(String[] members, ImsCallProfile profile) {
+        // This method is to initiate the conference call, not to add all the members.
+        start(members[0], profile);
+    }
+
+    @Override
+    public void accept(int callType, ImsStreamMediaProfile profile) {
+        try {
+            RilHolder.INSTANCE.getRadio(mSlotId).acceptImsCall(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
+                if (radioResponseInfo.error != 0) {
+                    Rlog.e(LOG_TAG, "error accepting ims call"); //TODO throw right exception
+                } else {
+                    mInCall = true;
+                }
+            }, mSlotId), callType);
+        } catch (RemoteException e) {
+            Rlog.e(LOG_TAG, "failed to accept ims call");
+        }
+    }
+
+    @Override
+    public void deflect(String destination) {
+        // Huawei shim this, we can do the same.
+    }
+
+    @Override
+    public void reject(int reason) {
+        try {
+            getRilCallId();
+            RilHolder.INSTANCE.getRadio(mSlotId).rejectCallWithReason(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
+                if (radioResponseInfo.error == 0) {
+                    Rlog.d(LOG_TAG, "Rejected incoming call.");
+                } else {
+                    Rlog.e(LOG_TAG, "Failed to reject incoming call!");
+                }
+            }, mSlotId), mCallId, reason);
+        } catch (RemoteException e) {
+            Rlog.e(LOG_TAG, "Error listing ims calls!");
+        }
+    }
+
+    private void getRilCallId() throws RemoteException {
+        synchronized (mCallIdLock) {
+            if (mCallId < 0) {
+                RilHolder.INSTANCE.getRadio(mSlotId).getCurrentImsCalls(RilHolder.getNextSerial());
+                while (mCallId < 0) {
+                    try {
+                        mCallIdLock.wait();
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void terminate(int reason) {
+        try {
+            getRilCallId();
+        } catch (RemoteException e) {
+            Rlog.e(LOG_TAG, "error getting ril call id", e);
+        }
+    }
 
 }

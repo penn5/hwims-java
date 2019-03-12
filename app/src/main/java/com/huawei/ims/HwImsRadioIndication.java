@@ -14,6 +14,8 @@ import android.hardware.radio.V1_0.SignalStrength;
 import android.hardware.radio.V1_0.SimRefreshResult;
 import android.hardware.radio.V1_0.StkCcUnsolSsResult;
 import android.hardware.radio.V1_0.SuppSvcNotification;
+import android.os.RemoteException;
+import android.telephony.Rlog;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -32,12 +34,31 @@ import vendor.huawei.hardware.radio.V1_0.RILVtFlowInfoReport;
 
 public class HwImsRadioIndication extends IRadioIndication.Stub {
 
+    private int mSlotId;
+
+    public HwImsRadioIndication(int slotId) {
+        mSlotId = slotId;
+    }
+
     private static final String LOG_TAG = "HwImsRadioIndication";
 
     @Override
     public void UnsolMsg(int indicationType, int msgId, RILUnsolMsgPayload rilUnsolMsgPayload) {
-        Log.e(LOG_TAG, "indicationType = " + indicationType + ", msgId = " + msgId);
+        Log.e(LOG_TAG, "indicationType = " + indicationType + ", msgId = " + msgId + ", msgPayload = " + rilUnsolMsgPayload);
         // Huawei
+        switch (msgId) {
+            case 1079:
+                imsCallStateChanged(indicationType);
+                break;
+        }
+    }
+
+    private void imsCallStateChanged(int indicationType) {
+        try {
+            RilHolder.INSTANCE.getRadio(mSlotId).getCurrentImsCalls(RilHolder.getNextSerial());
+        } catch (RemoteException e) {
+            Rlog.e(LOG_TAG, "Error getting current calls", e);
+        }
     }
 
     @Override
