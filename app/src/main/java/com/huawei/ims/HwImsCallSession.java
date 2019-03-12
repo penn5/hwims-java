@@ -17,6 +17,9 @@ import vendor.huawei.hardware.radio.V1_0.RILImsDial;
 import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VIDEO_N_VOICE;
 import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VOICE;
 import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VOICE_N_VIDEO;
+import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VS;
+import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VS_RX;
+import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VS_TX;
 import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VT;
 import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VT_NODIR;
 import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VT_RX;
@@ -96,6 +99,31 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         }
     }
 
+    public int convertAospCallType(int callType) {
+        switch (callType) {
+            case CALL_TYPE_VOICE_N_VIDEO:
+            case CALL_TYPE_VOICE:
+                return RILImsCallType.CALL_TYPE_VOICE;
+            case CALL_TYPE_VIDEO_N_VOICE:
+            case CALL_TYPE_VT:
+                return RILImsCallType.CALL_TYPE_VT;
+            case CALL_TYPE_VT_TX:
+                return RILImsCallType.CALL_TYPE_VT_TX;
+            case CALL_TYPE_VT_RX:
+                return RILImsCallType.CALL_TYPE_VT_RX;
+            case CALL_TYPE_VT_NODIR:
+                return RILImsCallType.CALL_TYPE_VT_NODIR;
+            case CALL_TYPE_VS:
+                throw new RuntimeException("NI VS!!");
+            case CALL_TYPE_VS_TX:
+                return RILImsCallType.CALL_TYPE_CS_VS_TX;
+            case CALL_TYPE_VS_RX:
+                return RILImsCallType.CALL_TYPE_CS_VS_RX;
+            default:
+                throw new RuntimeException("Unknown callType " + callType);
+        }
+    }
+
     @Override
     public void start(String callee, ImsCallProfile profile) {
         RILImsDial callInfo = new RILImsDial();
@@ -106,29 +134,11 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
             Rlog.e(LOG_TAG, "NI reading oemcallextras, it is " + extras.toString());
         }
         int callType;
-        switch (profile.getCallType()) {
-            case CALL_TYPE_VOICE_N_VIDEO:
-                callType = 0; //TODO: FIXME: ITS NOT FINSIHED AND WONT WORK!!!
-                break;
-            case CALL_TYPE_VOICE:
-                callType = RILImsCallType.CALL_TYPE_VOICE;
-                break;
-            case CALL_TYPE_VIDEO_N_VOICE:
-                Rlog.e(LOG_TAG, "Unsupported calltype!!!");
-                listener.callSessionInitiatedFailed(new ImsReasonInfo(ImsReasonInfo.CODE_LOCAL_INTERNAL_ERROR, ImsReasonInfo.CODE_UNSPECIFIED, "Unsupported CallType 3"));
-            case CALL_TYPE_VT:
-                callType = 0x3;
-                break;
-            case CALL_TYPE_VT_TX:
-                callType = 0x1;
-                break;
-            case CALL_TYPE_VT_RX:
-                callType = 0x2;
-                break;
-            case CALL_TYPE_VT_NODIR:
-                callType = 0x4;
-            default:
-                throw new RuntimeException(); //TODO
+        try {
+            callType = convertAospCallType(profile.getCallType());
+        } catch (RuntimeException e) {
+            listener.callSessionInitiatedFailed(new ImsReasonInfo(ImsReasonInfo.CODE_LOCAL_INTERNAL_ERROR, ImsReasonInfo.CODE_UNSPECIFIED, e.getMessage()));
+            throw e;
         }
         callInfo.callDetails.callType = callType;
         callInfo.callDetails.callDomain = 3; // From HwIms.
@@ -137,6 +147,11 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                 if (radioResponseInfo.error == 0) {
                     Rlog.e(LOG_TAG, "MADE AN IMS CALL OMG WOW");
                     Log.e(LOG_TAG, "MADE AN IMS CALL OMG WOW");
+                    listener.callSessionInitiated(profile);
+                } else {
+                    Rlog.e(LOG_TAG, "Failed to make ims call :(");
+                    Log.e(LOG_TAG, "failed to make ims call :(");
+                    listener.callSessionInitiatedFailed(new ImsReasonInfo(ImsReasonInfo.CODE_LOCAL_INTERNAL_ERROR, ImsReasonInfo.CODE_UNSPECIFIED, "Unknown response from IRadio"));
                 }
             }, mSlotId), callInfo);
         } catch (RemoteException e) {
