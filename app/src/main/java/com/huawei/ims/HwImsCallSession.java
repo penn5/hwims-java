@@ -11,6 +11,7 @@ import android.util.Log;
 
 import java.util.Objects;
 
+import vendor.huawei.hardware.radio.V1_0.RILImsCallDomain;
 import vendor.huawei.hardware.radio.V1_0.RILImsCallType;
 import vendor.huawei.hardware.radio.V1_0.RILImsDial;
 
@@ -141,7 +142,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
             throw e;
         }
         callInfo.callDetails.callType = callType;
-        callInfo.callDetails.callDomain = 3; // From HwIms.
+        callInfo.callDetails.callDomain = RILImsCallDomain.CALL_DOMAIN_AUTOMATIC;
         try {
             RilHolder.INSTANCE.getRadio(mSlotId).imsDial(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error == 0) {
