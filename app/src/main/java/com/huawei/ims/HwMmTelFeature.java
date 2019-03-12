@@ -71,6 +71,9 @@ public class HwMmTelFeature extends MmTelFeature {
                                 HwImsService.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo(ImsReasonInfo.CODE_UNSPECIFIED, radioResponseInfo.error, radioResponseInfo.toString() + rspMsgPayload.toString()));
                                 throw new RuntimeException();
                             } else {
+                                MmTelCapabilities capabilities = new MmTelCapabilities();
+                                capabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
+                                notifyCapabilitiesStatusChanged(capabilities);
                                 HwImsService.getInstance().getRegistration(mSlotId).onRegistered(HwImsRegistration.REGISTRATION_TECH_LTE);
                             }
                         }, mSlotId));
@@ -116,6 +119,7 @@ public class HwMmTelFeature extends MmTelFeature {
 
     @Override
     public synchronized ImsCallSessionImplBase createCallSession(@NonNull ImsCallProfile profile) {
+        Log.e(LOG_TAG, "Creating HwImsCallSession");
         return new HwImsCallSession(mSlotId, profile);
     }
 
