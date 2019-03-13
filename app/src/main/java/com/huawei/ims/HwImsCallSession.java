@@ -296,6 +296,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     }
 
     public void notifyDead() {
+        Rlog.d(LOG_TAG, "notifying call dead!!!!!");
         mState = State.TERMINATED;
         mInCall = false;
         listener.callSessionTerminated(new ImsReasonInfo());
