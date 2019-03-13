@@ -47,7 +47,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     private final Object mCallIdLock = new Object();
 
     public boolean confInProgress = false;
-    private RILImsCall rilImsCall;
+    RILImsCall rilImsCall;
 
     // For outgoing (MO) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile) {

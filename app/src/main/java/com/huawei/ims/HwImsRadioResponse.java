@@ -141,6 +141,9 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                     // An incoming call that we have never seen before, tell the framework.
                 } else {
                     Log.e(LOG_TAG, "Phantom Call!!!! " + redactCall(call));
+                    HwImsCallSession.calls.forEach((s, hwImsCallSession) -> {
+                        Rlog.e(LOG_TAG, "Phantom debugging got call in static calls " + redactCall(hwImsCallSession.rilImsCall) + " with number " + s);
+                    });
                     // A phantom call that *should* have been in awaitingIdFromRil but wasn't, TODO handle this error somehow, maybe reject it?
                     // Maybe conference calls go here? who knows TODO
                 }
