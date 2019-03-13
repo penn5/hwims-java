@@ -22,6 +22,8 @@ import android.hardware.radio.V1_0.SendSmsResult;
 import android.hardware.radio.V1_0.SetupDataCallResult;
 import android.hardware.radio.V1_0.SignalStrength;
 import android.hardware.radio.V1_0.VoiceRegStateResult;
+import android.os.Bundle;
+import android.telephony.Rlog;
 import android.telephony.ims.ImsCallProfile;
 import android.util.Log;
 
@@ -125,8 +127,15 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                 session.addIdFromRIL(call.index, call.number);
             }
             if (!HwImsCallSession.calls.containsKey(call.number)) {
+                if (call.isMT > 0) {
+                    Rlog.d(LOG_TAG, "Notifying MmTelFeature incoming call! " + redactCall(call));
+                    HwImsService.getInstance().createMmTelFeature(mSlotId).notifyIncomingCall(new HwImsCallSession(mSlotId, new ImsCallProfile(), call.index), new Bundle());
+                    // An incoming call that we have never seen before, tell the framework.
+                } else {
+                    Rlog.e(LOG_TAG, "Phantom Call!!!! " + redactCall(call));
+                    // A phantom call that *should* have been in awaitingIdFromRil but wasn't, TODO handle this error somehow, maybe reject it?
+                }
                 new HwImsCallSession(mSlotId, new ImsCallProfile(), call.index).reject(0);
-                // TODO make a new call and inform the ims system via the right listener
             }
         }
     }

@@ -43,6 +43,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     public static ConcurrentHashMap<String, HwImsCallSession> awaitingIdFromRIL = new ConcurrentHashMap<String, HwImsCallSession>();
     public static ConcurrentHashMap<String, HwImsCallSession> calls = new ConcurrentHashMap<>();
+
     private final Object mCallIdLock = new Object();
     public int mDirection = -1; // 0 is outgoing MO, 1 is incoming MT
     private int mCallId = -1;
@@ -69,6 +70,10 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                 mCallIdLock.notify();
             }
         }
+    }
+
+    public void notifyIncoming() {
+
     }
 
     @Override
