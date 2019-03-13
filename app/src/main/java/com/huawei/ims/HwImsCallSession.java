@@ -181,10 +181,12 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     Log.e(LOG_TAG, "MADE AN IMS CALL OMG WOW");
                     awaitingIdFromRIL.put(callee, this);
                     mInCall = true;
+                    mState = State.ESTABLISHED;
                     listener.callSessionInitiated(profile);
                 } else {
                     Rlog.e(LOG_TAG, "Failed to make ims call :(");
                     Log.e(LOG_TAG, "failed to make ims call :(");
+                    mState = State.TERMINATED;
                     listener.callSessionInitiatedFailed(new ImsReasonInfo());
                 }
             }, mSlotId), callInfo);
@@ -203,6 +205,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     @Override
     public void accept(int callType, ImsStreamMediaProfile profile) {
+        mState = State.ESTABLISHING;
         try {
             RilHolder.INSTANCE.getRadio(mSlotId).acceptImsCall(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error != 0) {
@@ -210,6 +213,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     Rlog.e(LOG_TAG, "error accepting ims call");
                 } else {
                     listener.callSessionInitiated(new ImsCallProfile());
+                    mState = State.ESTABLISHED;
                     mInCall = true;
                 }
             }, mSlotId), callType);
@@ -242,12 +246,16 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         }
         */
         // The above doesn't work. So, we do it the huawei way, which is to hangup the call.
+        mState = State.TERMINATING;
         try {
             getRilCallId();
             RilHolder.INSTANCE.getRadio(mSlotId).hangup(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 Rlog.d(LOG_TAG, "got cb for hangup!");
                 if (radioResponseInfo.error != 0) {
+                    mState = State.INVALID;
                     Rlog.e(LOG_TAG, "Error hanging up!");
+                } else {
+                    mState = State.TERMINATED;
                 }
             }, mSlotId), rilImsCall.index);
         } catch (RemoteException e) {
@@ -269,13 +277,17 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     @Override
     public void terminate(int reason) {
+        mState = State.TERMINATING;
         try {
             getRilCallId();
             Rlog.d(LOG_TAG, "terminating call...");
             RilHolder.INSTANCE.getRadio(mSlotId).hangup(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 Rlog.d(LOG_TAG, "got cb for hangup!");
                 if (radioResponseInfo.error != 0) {
+                    mState = State.INVALID;
                     Rlog.e(LOG_TAG, "Error hanging up!");
+                } else {
+                    mState = State.TERMINATED;
                 }
             }, mSlotId), rilImsCall.index);
         } catch (RemoteException e) {
@@ -284,6 +296,8 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     }
 
     public void notifyDead() {
+        mState = State.TERMINATED;
+        mInCall = false;
         listener.callSessionTerminated(new ImsReasonInfo());
     }
 
