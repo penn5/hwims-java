@@ -9,6 +9,7 @@ import android.hardware.radio.V1_0.RadioResponseInfo;
 import android.os.RemoteException;
 import android.util.Log;
 
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -46,7 +47,8 @@ public class RilHolder {
 
     public static void triggerCB(int serial, @NonNull RadioResponseInfo radioResponseInfo, @Nullable RspMsgPayload rspMsgPayload) {
         Log.e(LOG_TAG, "Incoming response for slot " + serialToSlot.get(serial) + ", serial " + serial + ", radioResponseInfo " + radioResponseInfo + ", rspMsgPayload " + rspMsgPayload);
-        Objects.requireNonNull(callbacks.get(serial)).run(radioResponseInfo, rspMsgPayload);
+        if (callbacks.containsKey(serial))
+            callbacks.get(serial).run(radioResponseInfo, rspMsgPayload);
     }
 
     public static int prepareBlock(int slotId) {
@@ -80,7 +82,7 @@ public class RilHolder {
             try {
                 try {
                     radioImpls[slotId] = IRadio.getService(serviceNames[slotId]);
-                } catch (IndexOutOfBoundsException e) {
+                } catch (NoSuchElementException e) {
                     Log.e(LOG_TAG, "Index oob in rilholder. Bail Out!!!", e);
                     NotificationManager notificationManager = HwImsService.getInstance().getSystemService(NotificationManager.class);
                     NotificationChannel channel = new NotificationChannel("HwIms", "HwIms", NotificationManager.IMPORTANCE_HIGH);
