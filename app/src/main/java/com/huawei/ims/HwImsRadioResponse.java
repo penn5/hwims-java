@@ -135,7 +135,6 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                     Rlog.e(LOG_TAG, "Phantom Call!!!! " + redactCall(call));
                     // A phantom call that *should* have been in awaitingIdFromRil but wasn't, TODO handle this error somehow, maybe reject it?
                 }
-                new HwImsCallSession(mSlotId, new ImsCallProfile(), call.index).reject(0);
             }
         }
     }
