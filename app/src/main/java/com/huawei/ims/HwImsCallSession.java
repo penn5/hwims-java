@@ -61,6 +61,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     public HwImsCallSession(int slotId, ImsCallProfile profile, RILImsCall call) {
         this(slotId, profile);
         this.rilImsCall = call;
+        calls.put(call.number, this);
     }
 
     public void addIdFromRIL(RILImsCall call, String number) {
