@@ -225,13 +225,13 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     @Override
     public void reject(int reason) {
+        /*
         try {
             getRilCallId();
             RilHolder.INSTANCE.getRadio(mSlotId).rejectCallWithReason(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error == 0) {
                     Rlog.d(LOG_TAG, "Rejected incoming call.");
                 } else {
-                    //TODO wtf do we throw here?
                     Rlog.e(LOG_TAG, "Failed to reject incoming call!");
                 }
             }, mSlotId), rilImsCall.index, reason);
@@ -239,6 +239,20 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
             //and here too
             Rlog.e(LOG_TAG, "Error listing ims calls!");
         }
+        */
+        // The above doesn't work. So, we do it the huawei way, which is to hangup the call.
+        try {
+            getRilCallId();
+            RilHolder.INSTANCE.getRadio(mSlotId).hangup(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
+                Rlog.d(LOG_TAG, "got cb for hangup!");
+                if (radioResponseInfo.error != 0) {
+                    Rlog.e(LOG_TAG, "Error hanging up!");
+                }
+            }, mSlotId), rilImsCall.index);
+        } catch (RemoteException e) {
+            Rlog.e(LOG_TAG, "error hanging up", e);
+        }
+
     }
 
     private void getRilCallId() {
@@ -256,17 +270,20 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     public void terminate(int reason) {
         try {
             getRilCallId();
+            Rlog.d(LOG_TAG, "terminating call...");
             RilHolder.INSTANCE.getRadio(mSlotId).hangup(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 Rlog.d(LOG_TAG, "got cb for hangup!");
                 if (radioResponseInfo.error != 0) {
                     Rlog.e(LOG_TAG, "Error hanging up!");
-                } else {
-                    listener.callSessionTerminated(new ImsReasonInfo());
                 }
             }, mSlotId), rilImsCall.index);
         } catch (RemoteException e) {
             Rlog.e(LOG_TAG, "error hanging up", e);
         }
+    }
+
+    public void notifyDead() {
+        listener.callSessionTerminated(new ImsReasonInfo());
     }
 
     @Override

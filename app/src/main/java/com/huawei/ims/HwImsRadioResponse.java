@@ -31,6 +31,7 @@ import com.android.ims.ImsManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 
 import vendor.huawei.hardware.radio.V1_0.CsgNetworkInfo;
@@ -122,6 +123,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
     public void getCurrentImsCallsResponse(RadioResponseInfo radioResponseInfo, ArrayList<RILImsCall> arrayList) {
         // Huawei
         //TODO find the right way to do this, if there even is a better way
+        ArrayList<String> calls = new ArrayList<>(arrayList.size());
         for (RILImsCall call : arrayList) {
             Log.d(LOG_TAG, "calls list contains " + redactCall(call));
             HwImsCallSession session = HwImsCallSession.awaitingIdFromRIL.get(call.number);
@@ -156,11 +158,17 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                     }
                 }
             }
+            calls.add(call.number);
+        }
+        for (Map.Entry<String, HwImsCallSession> call : HwImsCallSession.calls.entrySet()) {
+            if (!calls.contains(call.getKey())) {
+                call.getValue().notifyDead();
+            }
         }
     }
 
     private String redactCall(RILImsCall call) {
-        return "{.state = " + call.state + ", .index = " + call.index + ", .toa = " + call.toa + ", .isMpty = " + call.isMpty + ", .isMT = " + call.isMT + ", .als = " + call.als + ", .isVoice = " + call.isVoice + ", .isVoicePrivacy = " + call.isVoicePrivacy + ", .number = REDACTED, .numberPresentation = " + call.numberPresentation + ", .name = " + call.name + ", .namePresentation = " + call.namePresentation + ", .callDetails = " + call.callDetails.toString() + ", .isEConference = " + call.isECOnference + ", .peerVideoSupport = " + call.peerVideoSupport + "}";
+        return "{.state = " + call.state + ", .index = " + call.index + ", .toa = " + call.toa + ", .isMpty = " + call.isMpty + ", .isMT = " + call.isMT + ", .als = " + call.als + ", .isVoice = " + call.isVoice + ", .isVoicePrivacy = " + call.isVoicePrivacy + ", .number = " + call.number + ", .numberPresentation = " + call.numberPresentation + ", .name = " + call.name + ", .namePresentation = " + call.namePresentation + ", .callDetails = " + call.callDetails.toString() + ", .isEConference = " + call.isECOnference + ", .peerVideoSupport = " + call.peerVideoSupport + "}";
     }
 
     @Override
@@ -722,7 +730,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
 
     @Override
     public void setMuteResponse(RadioResponseInfo radioResponseInfo) {
-
+        RspMsg(radioResponseInfo, -1, null);
     }
 
     @Override
