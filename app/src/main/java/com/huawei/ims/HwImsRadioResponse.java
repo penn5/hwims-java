@@ -27,6 +27,8 @@ import android.telephony.Rlog;
 import android.telephony.ims.ImsCallProfile;
 import android.util.Log;
 
+import com.android.ims.ImsManager;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
@@ -113,7 +115,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
 
     @Override
     public void getCellInfoListOtdoaResponse(RadioResponseInfo radioResponseInfo, ArrayList<CellInfo> arrayList) {
-        // Huawei
+        //   Huawei
     }
 
     @Override
@@ -124,16 +126,34 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
             Log.d(LOG_TAG, "calls list contains " + redactCall(call));
             HwImsCallSession session = HwImsCallSession.awaitingIdFromRIL.get(call.number);
             if (session != null) {
-                session.addIdFromRIL(call.index, call.number);
+                session.addIdFromRIL(call, call.number);
             }
-            if (!HwImsCallSession.calls.containsKey(call.number)) {
+            session = HwImsCallSession.calls.get(call.number);
+            if (session == null) {
                 if (call.isMT > 0) {
-                    Rlog.d(LOG_TAG, "Notifying MmTelFeature incoming call! " + redactCall(call));
-                    HwImsService.getInstance().createMmTelFeature(mSlotId).notifyIncomingCall(new HwImsCallSession(mSlotId, new ImsCallProfile(), call.index), new Bundle());
+                    Log.d(LOG_TAG, "Notifying MmTelFeature incoming call! " + redactCall(call));
+                    Bundle extras = new Bundle();
+                    HwImsCallSession callSession = new HwImsCallSession(mSlotId, new ImsCallProfile(), call);
+                    extras.putString(ImsManager.EXTRA_CALL_ID, callSession.getCallId());
+                    HwImsService.getInstance().createMmTelFeature(mSlotId).notifyIncomingCall(callSession, extras);
                     // An incoming call that we have never seen before, tell the framework.
                 } else {
-                    Rlog.e(LOG_TAG, "Phantom Call!!!! " + redactCall(call));
+                    Log.e(LOG_TAG, "Phantom Call!!!! " + redactCall(call));
                     // A phantom call that *should* have been in awaitingIdFromRil but wasn't, TODO handle this error somehow, maybe reject it?
+                    // Maybe conference calls go here? who knows TODO
+                }
+            } else {
+                // Existing call, update it's data.
+                session.updateCall(call);
+            }
+            if (call.isMpty > 0 && call.state == 2) { // Dialing & Multiparty
+                // It is a new conference call being added.
+                for (HwImsCallSession confSession : HwImsCallSession.calls.values()) {
+                    if (confSession.confInProgress) {
+                        Rlog.d(LOG_TAG, "adding call " + call.index + " to conference " + confSession.getCallId());
+                        confSession.notifyConfDone(call);
+                        break;
+                    }
                 }
             }
         }
@@ -447,7 +467,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
 
     @Override
     public void hangupConnectionResponse(RadioResponseInfo radioResponseInfo) {
-
+        RspMsg(radioResponseInfo, -1, null);
     }
 
     @Override
