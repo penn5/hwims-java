@@ -162,7 +162,11 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
         }
         for (Map.Entry<String, HwImsCallSession> call : HwImsCallSession.calls.entrySet()) {
             if (!calls.contains(call.getKey())) {
-                call.getValue().notifyDead();
+                try {
+                    call.getValue().notifyDead();
+                } catch (RuntimeException e) {
+                    Rlog.e(LOG_TAG, "error notifying dead call!", e);
+                }
             }
         }
     }
