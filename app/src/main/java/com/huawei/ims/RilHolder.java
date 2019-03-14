@@ -104,11 +104,15 @@ public class RilHolder {
                 }
                 responseCallbacks[slotId] = new HwImsRadioResponse(slotId);
                 unsolCallbacks[slotId] = new HwImsRadioIndication(slotId);
-                radioImpls[slotId].setResponseFunctionsHuawei(responseCallbacks[slotId], unsolCallbacks[slotId]);
             } catch (RemoteException e) {
                 Log.e(LOG_TAG, "remoteexception getting serivce. will throw npe later ig.");
                 return null;
             }
+        }
+        try {
+            radioImpls[slotId].setResponseFunctionsHuawei(responseCallbacks[slotId], unsolCallbacks[slotId]);
+        } catch (RemoteException e) {
+            Log.e(LOG_TAG, "Failed to update resp functions!");
         }
         return radioImpls[slotId];
     }
