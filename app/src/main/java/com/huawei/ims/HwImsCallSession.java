@@ -298,10 +298,13 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     Rlog.e(LOG_TAG, "Error hanging up!");
                 } else {
                     mState = State.TERMINATED;
+                    listener.callSessionTerminated(new ImsReasonInfo());
+
                 }
             }, mSlotId), rilImsCall.index);
             // TODO FIXME: Radio doesn't reply to hangup() so we assume it worked.
             mState = State.TERMINATED;
+            listener.callSessionTerminated(new ImsReasonInfo());
         } catch (RemoteException e) {
             Rlog.e(LOG_TAG, "error hanging up", e);
         }
@@ -332,10 +335,12 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     Rlog.e(LOG_TAG, "Error hanging up!");
                 } else {
                     mState = State.TERMINATED;
+                    listener.callSessionTerminated(new ImsReasonInfo());
                 }
             }, mSlotId), rilImsCall.index);
             // TODO FIXME: Radio doesn't reply to hangup() so we assume it worked.
             mState = State.TERMINATED;
+            listener.callSessionTerminated(new ImsReasonInfo());
         } catch (RemoteException e) {
             Rlog.e(LOG_TAG, "error hanging up", e);
         }

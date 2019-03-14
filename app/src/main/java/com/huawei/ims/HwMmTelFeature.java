@@ -54,7 +54,7 @@ public class HwMmTelFeature extends MmTelFeature {
     }
 
     public void registerIms() {
-
+        HwImsService.getInstance().getRegistration(mSlotId).onRegistering(HwImsRegistration.REGISTRATION_TECH_LTE);
         try {
             RilHolder.INSTANCE.getRadio(mSlotId).setImsSwitch(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 Log.e(LOG_TAG, "Got resp from setImsSwitch");
@@ -62,7 +62,6 @@ public class HwMmTelFeature extends MmTelFeature {
                     throw new RuntimeException();
                 } else {
                     try {
-                        HwImsService.getInstance().getRegistration(mSlotId).onRegistering(HwImsRegistration.REGISTRATION_TECH_LTE);
                         RilHolder.INSTANCE.getRadio(mSlotId).imsRegister(RilHolder.callback((radioResponseInfo2, rspMsgPayload2) -> {
                             Log.e(LOG_TAG, "CALLBACK CALLED!!!" + radioResponseInfo + rspMsgPayload);
                             if (radioResponseInfo.error != 0) {
@@ -77,12 +76,14 @@ public class HwMmTelFeature extends MmTelFeature {
                             }
                         }, mSlotId));
                     } catch (RemoteException e) {
+                        HwImsService.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
                         Log.e(LOG_TAG, "error registering ims", e);
                     }
                 }
 
             }, mSlotId), 1);
         } catch (RemoteException e) {
+            HwImsService.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
             Log.e(LOG_TAG, "Failed to setImsSwitch to register", e);
         }
 
