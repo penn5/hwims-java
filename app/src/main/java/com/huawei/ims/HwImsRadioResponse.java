@@ -141,7 +141,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                     // An incoming call that we have never seen before, tell the framework.
                 } else {
                     Log.e(LOG_TAG, "Phantom Call!!!! " + redactCall(call));
-                    HwImsCallSession.calls.forEach((s, hwImsCallSession) -> Rlog.e(LOG_TAG, "Phantom debugging got call in static calls " + redactCall(hwImsCallSession.rilImsCall) + " with number " + s));
+                    HwImsCallSession.calls.forEach((s, hwImsCallSession) -> Rlog.d(LOG_TAG, "Phantom debugging got call in static calls " + redactCall(hwImsCallSession.rilImsCall) + " with number " + s));
                     // A phantom call that *should* have been in awaitingIdFromRil but wasn't, TODO handle this error somehow, maybe reject it?
                     // Maybe conference calls go here? who knows TODO
                 }
@@ -161,7 +161,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
             }
             calls.add(call.number);
         }
-        Rlog.e(LOG_TAG, "active calls is " + calls.toString());
+        Rlog.v(LOG_TAG, "active calls is " + calls.toString());
         for (Map.Entry<String, HwImsCallSession> call : HwImsCallSession.calls.entrySet()) {
             if (!calls.contains(call.getKey())) {
                 try {

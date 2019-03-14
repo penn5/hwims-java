@@ -44,11 +44,14 @@ public class HwImsRadioIndication extends IRadioIndication.Stub {
 
     @Override
     public void UnsolMsg(int indicationType, int msgId, RILUnsolMsgPayload rilUnsolMsgPayload) {
-        Log.e(LOG_TAG, "indicationType = " + indicationType + ", msgId = " + msgId + ", msgPayload = " + rilUnsolMsgPayload);
+        Log.v(LOG_TAG, "indicationType = " + indicationType + ", msgId = " + msgId + ", msgPayload = " + rilUnsolMsgPayload);
         // Huawei
         switch (msgId) {
             case 1079:
                 imsCallStateChanged(indicationType);
+                break;
+            default:
+                Log.w(LOG_TAG, "Unknown indication type!");
                 break;
         }
     }

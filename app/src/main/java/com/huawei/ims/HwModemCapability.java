@@ -28,7 +28,7 @@ class HwModemCapability {
                 return z;
             }
         } catch (IndexOutOfBoundsException ex) {
-            Log.e(TAG, "isCapabilitySupport " + ex);
+            Log.w(TAG, "isCapabilitySupport", ex);
         }
         return false;
     }

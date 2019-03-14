@@ -56,7 +56,6 @@ public class HwMmTelFeature extends MmTelFeature {
     private void registerImsInner() {
         try {
             RilHolder.INSTANCE.getRadio(mSlotId).imsRegister(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
-                Log.e(LOG_TAG, "CALLBACK CALLED!!!" + radioResponseInfo + rspMsgPayload);
                 if (radioResponseInfo.error != 0) {
                     Log.e(LOG_TAG, "radiorespinfo gives error " + radioResponseInfo.error);
                     HwImsService.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo(ImsReasonInfo.CODE_UNSPECIFIED, radioResponseInfo.error, radioResponseInfo.toString() + rspMsgPayload.toString()));
@@ -78,7 +77,6 @@ public class HwMmTelFeature extends MmTelFeature {
         HwImsService.getInstance().getRegistration(mSlotId).onRegistering(HwImsRegistration.REGISTRATION_TECH_LTE);
         try {
             RilHolder.INSTANCE.getRadio(mSlotId).setImsSwitch(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
-                Log.e(LOG_TAG, "Got resp from setImsSwitch");
                 if (radioResponseInfo.error != 0) {
                     HwImsService.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
                 } else {
@@ -98,7 +96,6 @@ public class HwMmTelFeature extends MmTelFeature {
     public void unregisterIms() {
         try {
             RilHolder.INSTANCE.getRadio(mSlotId).setImsSwitch(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
-                Log.e(LOG_TAG, "Got resp from setImsSwitch");
                 if (radioResponseInfo.error != 0) {
                     // What can we do?
                     Log.e(LOG_TAG, "Failed to unregister imsswitch");
@@ -125,7 +122,6 @@ public class HwMmTelFeature extends MmTelFeature {
 
     @Override
     public synchronized ImsCallSessionImplBase createCallSession(@NonNull ImsCallProfile profile) {
-        Log.e(LOG_TAG, "Creating HwImsCallSession");
         return new HwImsCallSession(mSlotId, profile);
     }
 
