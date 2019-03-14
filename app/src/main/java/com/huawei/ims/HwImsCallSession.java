@@ -52,7 +52,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         this.mProfile = new ImsCallProfile();
         this.mLocalProfile = new ImsCallProfile(profile.getServiceType(), profile.getCallType());
         this.mRemoteProfile = new ImsCallProfile(profile.getServiceType(), profile.getCallType());
-        this.mState = State.NEGOTIATING;
+        this.mState = State.INVALID;
     }
 
     // For incoming (MT) calls
@@ -300,6 +300,8 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     mState = State.TERMINATED;
                 }
             }, mSlotId), rilImsCall.index);
+            // TODO FIXME: Radio doesn't reply to hangup() so we assume it worked.
+            mState = State.TERMINATED;
         } catch (RemoteException e) {
             Rlog.e(LOG_TAG, "error hanging up", e);
         }
@@ -332,6 +334,8 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     mState = State.TERMINATED;
                 }
             }, mSlotId), rilImsCall.index);
+            // TODO FIXME: Radio doesn't reply to hangup() so we assume it worked.
+            mState = State.TERMINATED;
         } catch (RemoteException e) {
             Rlog.e(LOG_TAG, "error hanging up", e);
         }
