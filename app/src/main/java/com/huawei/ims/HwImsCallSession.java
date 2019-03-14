@@ -59,7 +59,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         this.mProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
         this.mLocalProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
         this.mRemoteProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
-        this.mState = State.INVALID;
+        this.mState = State.IDLE;
     }
 
     // For incoming (MT) calls
@@ -172,12 +172,14 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     @Override
     public ImsCallProfile getRemoteCallProfile() {
-        return mRemoteProfile;
+        //return mRemoteProfile;
+        return mProfile;
     }
 
     @Override
     public ImsCallProfile getLocalCallProfile() {
-        return mLocalProfile;
+        //return mLocalProfile;
+        return mProfile;
     }
 
     @Override
@@ -238,7 +240,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         mCallee = callee;
         RILImsDial callInfo = new RILImsDial();
         callInfo.address = callee;
-        callInfo.clir = profile.getCallExtraInt("oir"); // Huawei do this so it **must** be right... Oh wait...
+        callInfo.clir = profile.getCallExtraInt(EXTRA_OIR); // Huawei do this so it **must** be right... Oh wait...
         Bundle extras = profile.mCallExtras.getBundle("OemCallExtras");
         if (extras != null) {
             Rlog.e(LOG_TAG, "NI reading oemcallextras, it is " + extras.toString());

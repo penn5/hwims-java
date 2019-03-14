@@ -144,6 +144,11 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                     HwImsCallSession.calls.forEach((s, hwImsCallSession) -> Rlog.d(LOG_TAG, "Phantom debugging got call in static calls " + redactCall(hwImsCallSession.rilImsCall) + " with number " + s));
                     // A phantom call that *should* have been in awaitingIdFromRil but wasn't, TODO handle this error somehow, maybe reject it?
                     // Maybe conference calls go here? who knows TODO
+                    Bundle extras = new Bundle();
+                    HwImsCallSession callSession = new HwImsCallSession(mSlotId, new ImsCallProfile(), call);
+                    extras.putString(ImsManager.EXTRA_CALL_ID, callSession.getCallId());
+                    extras.putBoolean(ImsManager.EXTRA_IS_UNKNOWN_CALL, true);
+                    HwImsService.getInstance().createMmTelFeature(mSlotId).notifyIncomingCall(callSession, extras);
                 }
             } else {
                 // Existing call, update it's data.
