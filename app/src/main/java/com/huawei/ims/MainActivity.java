@@ -16,15 +16,24 @@ public class MainActivity extends Activity {
     }
 
     public void restartRILD0(View view) throws RemoteException {
-        RilHolder.INSTANCE.getRadio(0).restartRILD(RilHolder.getNextSerial());
+        try {
+            RilHolder.INSTANCE.getRadio(0).restartRILD(RilHolder.getNextSerial());
+        } catch (NullPointerException ignored) {
+        }
     }
 
     public void restartRILD1(View view) throws RemoteException {
-        RilHolder.INSTANCE.getRadio(1).restartRILD(RilHolder.getNextSerial());
+        try {
+            RilHolder.INSTANCE.getRadio(1).restartRILD(RilHolder.getNextSerial());
+        } catch (NullPointerException ignored) {
+        }
     }
 
     public void restartRILD2(View view) throws RemoteException {
-        RilHolder.INSTANCE.getRadio(2).restartRILD(RilHolder.getNextSerial());
+        try {
+            RilHolder.INSTANCE.getRadio(2).restartRILD(RilHolder.getNextSerial());
+        } catch (NullPointerException ignored) {
+        }
     }
 
     public void fakeReg0(View view) {

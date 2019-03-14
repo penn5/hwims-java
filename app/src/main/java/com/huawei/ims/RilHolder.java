@@ -83,20 +83,24 @@ public class RilHolder {
                 try {
                     radioImpls[slotId] = IRadio.getService(serviceNames[slotId]);
                 } catch (NoSuchElementException e) {
-                    Log.e(LOG_TAG, "Index oob in rilholder. Bail Out!!!", e);
-                    NotificationManager notificationManager = HwImsService.getInstance().getSystemService(NotificationManager.class);
-                    NotificationChannel channel = new NotificationChannel("HwIms", "HwIms", NotificationManager.IMPORTANCE_HIGH);
-                    notificationManager.createNotificationChannel(channel);
-                    notificationManager.cancelAll();
-                    Notification n = new Notification.Builder(HwImsService.getInstance(), "HwIms")
-                            .setSmallIcon(R.drawable.ic_launcher_foreground)
-                            .setContentTitle("HwIms not supported")
-                            .setContentText("Please uninstall HwIms application from settings ASAP! Caused by broken IRadio or SELinux, try permissive.")
-                            .setAutoCancel(true)
-                            .build();
-                    notificationManager.notify(0, n);
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                    // We're dead.
+                    if (slotId == 0) {
+                        Log.e(LOG_TAG, "Index oob in rilholder. Bail Out!!!", e);
+                        NotificationManager notificationManager = HwImsService.getInstance().getSystemService(NotificationManager.class);
+                        NotificationChannel channel = new NotificationChannel("HwIms", "HwIms", NotificationManager.IMPORTANCE_HIGH);
+                        notificationManager.createNotificationChannel(channel);
+                        notificationManager.cancelAll();
+                        Notification n = new Notification.Builder(HwImsService.getInstance(), "HwIms")
+                                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                                .setContentTitle("HwIms not supported")
+                                .setContentText("Please uninstall HwIms application from settings ASAP! Caused by broken IRadio or SELinux, try permissive.")
+                                .setAutoCancel(true)
+                                .build();
+                        notificationManager.notify(0, n);
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                        // We're dead.
+                    } else {
+                        return null;
+                    }
                 }
                 responseCallbacks[slotId] = new HwImsRadioResponse(slotId);
                 unsolCallbacks[slotId] = new HwImsRadioIndication(slotId);
