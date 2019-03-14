@@ -63,6 +63,9 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     // For incoming (MT) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile, RILImsCall call) {
         this(slotId, profile);
+        this.mProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
+        this.mLocalProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
+        this.mRemoteProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
         updateCall(call);
         calls.put(call.number, this);
     }
