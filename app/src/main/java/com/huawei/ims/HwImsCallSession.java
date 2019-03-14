@@ -51,6 +51,8 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     boolean confInProgress = false;
     private int mState;
 
+    public String mCallee;
+
     // For outgoing (MO) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile) {
         this.mSlotId = slotId;
@@ -127,7 +129,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
             case 6: // END
                 mState = State.TERMINATED;
                 if (listener != null)
-                    listener.callSessionTerminated(new ImsReasonInfo());
+                    die(new ImsReasonInfo());
                 break;
         }
 
@@ -137,10 +139,20 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         mProfile.setCallExtraInt(EXTRA_OIR, ImsCallProfile.presentationToOir(call.numberPresentation));
         mProfile.setCallExtraInt(EXTRA_CNAP, ImsCallProfile.presentationToOir(call.namePresentation));
 
+        mCallee = call.number;
+
         if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && (!call.equals(rilImsCall)) && listener != null) {
             listener.callSessionUpdated(mProfile);
         }
         rilImsCall = call;
+    }
+
+    private void die(ImsReasonInfo reason) {
+        calls.remove(mCallee);
+        awaitingIdFromRIL.remove(mCallee);
+        if (listener != null) {
+            listener.callSessionTerminated(reason);
+        }
     }
 
     @Override
@@ -223,6 +235,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     @Override
     public void start(String callee, ImsCallProfile profile) {
+        mCallee = callee;
         RILImsDial callInfo = new RILImsDial();
         callInfo.address = callee;
         callInfo.clir = profile.getCallExtraInt("oir"); // Huawei do this so it **must** be right... Oh wait...
@@ -320,13 +333,13 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     Rlog.e(LOG_TAG, "Error hanging up!");
                 } else {
                     mState = State.TERMINATED;
-                    listener.callSessionTerminated(new ImsReasonInfo());
+                    die(new ImsReasonInfo());
 
                 }
             }, mSlotId), rilImsCall.index);
             // TODO FIXME: Radio doesn't reply to hangup() so we assume it worked.
             mState = State.TERMINATED;
-            listener.callSessionTerminated(new ImsReasonInfo());
+            die(new ImsReasonInfo());
         } catch (RemoteException e) {
             Rlog.e(LOG_TAG, "error hanging up", e);
         }
@@ -357,12 +370,12 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     Rlog.e(LOG_TAG, "Error hanging up!");
                 } else {
                     mState = State.TERMINATED;
-                    listener.callSessionTerminated(new ImsReasonInfo());
+                    die(new ImsReasonInfo());
                 }
             }, mSlotId), rilImsCall.index);
             // TODO FIXME: Radio doesn't reply to hangup() so we assume it worked.
             mState = State.TERMINATED;
-            listener.callSessionTerminated(new ImsReasonInfo());
+            die(new ImsReasonInfo());
         } catch (RemoteException e) {
             Rlog.e(LOG_TAG, "error hanging up", e);
         }
