@@ -83,26 +83,31 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
             case 0: // ACTIVE
                 if (rilImsCall == null) {
                     mState = State.ESTABLISHED;
-                    listener.callSessionInitiated(mProfile);
+                    if (listener != null)
+                        listener.callSessionInitiated(mProfile);
                 } else if (rilImsCall.state == 2 || // DIALING
                         rilImsCall.state == 3 || // ALERTING
                         rilImsCall.state == 4 || // INCOMING
                         rilImsCall.state == 5) { // WAITING
                     mState = State.ESTABLISHED;
-                    listener.callSessionInitiated(mProfile);
+                    if (listener != null)
+                        listener.callSessionInitiated(mProfile);
                 } else if (rilImsCall.state == 1 && !confInProgress) { // HOLDING
-                    listener.callSessionResumed(mProfile);
+                    if (listener != null)
+                        listener.callSessionResumed(mProfile);
                 } else {
                     Rlog.e(LOG_TAG, "stuff");
                 }
                 break;
             case 1: // HOLDING
-                listener.callSessionHeld(mProfile);
+                if (listener != null)
+                    listener.callSessionHeld(mProfile);
                 break;
             case 2: // DIALING
                 if (rilImsCall == null) {
                     Rlog.e(LOG_TAG, "Dialing an incoming call wtf?");
-                    listener.callSessionProgressing(new ImsStreamMediaProfile());
+                    if (listener != null)
+                        listener.callSessionProgressing(new ImsStreamMediaProfile());
                 }
                 break;
             case 3: // ALERTING
@@ -110,14 +115,16 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                 if (rilImsCall == null) {
                     Rlog.e(LOG_TAG, "Alerting an incoming call wtf?");
                 }
-                listener.callSessionProgressing(new ImsStreamMediaProfile());
+                if (listener != null)
+                    listener.callSessionProgressing(new ImsStreamMediaProfile());
                 break;
             case 4: // INCOMING
             case 5: // WAITING
                 break;
             case 6: // END
                 mState = State.TERMINATED;
-                listener.callSessionTerminated(new ImsReasonInfo());
+                if (listener != null)
+                    listener.callSessionTerminated(new ImsReasonInfo());
                 break;
         }
 
@@ -127,7 +134,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         mProfile.setCallExtraInt(EXTRA_OIR, ImsCallProfile.presentationToOir(call.numberPresentation));
         mProfile.setCallExtraInt(EXTRA_CNAP, ImsCallProfile.presentationToOir(call.namePresentation));
 
-        if ((lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && (!call.equals(rilImsCall)))) {
+        if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && (!call.equals(rilImsCall)) && listener != null) {
             listener.callSessionUpdated(mProfile);
         }
         rilImsCall = call;
