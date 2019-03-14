@@ -13,12 +13,11 @@ import android.util.SparseArray;
 
 public class HwMmTelFeature extends MmTelFeature {
 
-    private static HwMmTelFeature[] instances = {null, null, null};
+    private static final HwMmTelFeature[] instances = {null, null, null};
     private final String LOG_TAG = "HwImsMmTelFeatureImpl";
     // Enabled Capabilities - not status
     private final SparseArray<MmTelCapabilities> mEnabledCapabilities = new SparseArray<>();
-    private int mSlotId;
-    private boolean mIsReady = false;
+    private final int mSlotId;
 
     private HwMmTelFeature(int slotId) { // Use getInstance(slotId)
         mSlotId = slotId;
@@ -125,13 +124,11 @@ public class HwMmTelFeature extends MmTelFeature {
 
     @Override
     public void onFeatureRemoved() {
-        mIsReady = false;
         super.onFeatureRemoved();
     }
 
     @Override
     public void onFeatureReady() {
-        mIsReady = true;
         registerIms();
     }
 

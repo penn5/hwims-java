@@ -4,7 +4,7 @@ import android.os.SystemProperties;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class HwModemCapability {
+class HwModemCapability {
 
     private static final String TAG = "HwModemCapability";
     private static String MODEM_CAP = SystemProperties.get("persist.radio.modem.cap", "");

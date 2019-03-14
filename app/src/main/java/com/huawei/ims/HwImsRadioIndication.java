@@ -34,9 +34,9 @@ import vendor.huawei.hardware.radio.V1_0.RILVtFlowInfoReport;
 
 public class HwImsRadioIndication extends IRadioIndication.Stub {
 
-    private int mSlotId;
+    private final int mSlotId;
 
-    public HwImsRadioIndication(int slotId) {
+    HwImsRadioIndication(int slotId) {
         mSlotId = slotId;
     }
 
@@ -54,6 +54,10 @@ public class HwImsRadioIndication extends IRadioIndication.Stub {
     }
 
     private void imsCallStateChanged(int indicationType) {
+        if (indicationType > 1) { // 1 is the normal one, 0 happens sometimes, 0 seems to mean "call terminated"
+            // Weird...
+            Rlog.w(LOG_TAG, "unknown indicationType " + indicationType);
+        }
         try {
             RilHolder.INSTANCE.getRadio(mSlotId).getCurrentImsCalls(RilHolder.getNextSerial());
         } catch (RemoteException e) {

@@ -42,7 +42,7 @@ public class HwImsService extends ImsService {
         mInstance = this;
     }
 
-    public boolean supportsDualIms() {
+    private boolean supportsDualIms() {
         return HwModemCapability.isCapabilitySupport(21) && getSystemService(TelephonyManager.class).getPhoneCount() > 1;
     }
 

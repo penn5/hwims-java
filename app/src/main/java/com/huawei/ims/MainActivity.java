@@ -6,17 +6,13 @@ import android.os.RemoteException;
 import android.view.View;
 
 public class MainActivity extends Activity {
-    Object x;
+    private Object x;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         this.x = new Object();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.x = null;
-    }
-
-    public void doNothing(View v) {
-        assert this.x == null;
     }
 
     public void restartRILD0(View view) throws RemoteException {

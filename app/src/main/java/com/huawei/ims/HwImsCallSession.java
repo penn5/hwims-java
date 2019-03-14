@@ -31,8 +31,7 @@ import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VT_TX;
 
 public class HwImsCallSession extends ImsCallSessionImplBase {
     private static final String LOG_TAG = "HwImsCallSession";
-    private static int instanceCount = 0;
-    private int mSlotId;
+    static final ConcurrentHashMap<String, HwImsCallSession> awaitingIdFromRIL = new ConcurrentHashMap<>();
     private ImsCallProfile mProfile;
     private ImsCallProfile mLocalProfile;
     private ImsCallProfile mRemoteProfile;
@@ -40,14 +39,12 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     RILImsCall rilImsCall = null;
     private boolean mInCall = false;
-
-    public static ConcurrentHashMap<String, HwImsCallSession> awaitingIdFromRIL = new ConcurrentHashMap<String, HwImsCallSession>();
-    public static ConcurrentHashMap<String, HwImsCallSession> calls = new ConcurrentHashMap<>();
+    static final ConcurrentHashMap<String, HwImsCallSession> calls = new ConcurrentHashMap<>();
+    private final int mSlotId;
 
     private final Object mCallIdLock = new Object();
-
-    public boolean confInProgress = false;
-    private int mState = State.IDLE;
+    boolean confInProgress = false;
+    private int mState;
 
     // For outgoing (MO) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile) {
@@ -55,6 +52,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         this.mProfile = new ImsCallProfile();
         this.mLocalProfile = new ImsCallProfile(profile.getServiceType(), profile.getCallType());
         this.mRemoteProfile = new ImsCallProfile(profile.getServiceType(), profile.getCallType());
+        this.mState = State.NEGOTIATING;
     }
 
     // For incoming (MT) calls
@@ -176,7 +174,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         }
     }
 
-    public int convertAospCallType(int callType) {
+    private int convertAospCallType(int callType) {
         switch (callType) {
             case CALL_TYPE_VOICE_N_VIDEO:
             case CALL_TYPE_VOICE:
@@ -337,13 +335,6 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         } catch (RemoteException e) {
             Rlog.e(LOG_TAG, "error hanging up", e);
         }
-    }
-
-    public void notifyDead() {
-        Rlog.d(LOG_TAG, "notifying call dead!!!!!");
-        mState = State.TERMINATED;
-        mInCall = false;
-        listener.callSessionTerminated(new ImsReasonInfo());
     }
 
     @Override
