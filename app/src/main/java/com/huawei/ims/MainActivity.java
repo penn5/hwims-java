@@ -26,4 +26,16 @@ public class MainActivity extends Activity {
     public void restartRILD2(View view) throws RemoteException {
         RilHolder.INSTANCE.getRadio(2).restartRILD(RilHolder.getNextSerial());
     }
+
+    public void fakeReg0(View view) {
+        HwImsService.getInstance().enableIms(0);
+    }
+
+    public void fakeReg1(View view) {
+        HwImsService.getInstance().enableIms(1);
+    }
+
+    public void fakeReg2(View view) {
+        HwImsService.getInstance().enableIms(2);
+    }
 }
