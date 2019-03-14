@@ -37,7 +37,7 @@ import static android.telephony.ims.ImsCallProfile.SERVICE_TYPE_NORMAL;
 public class HwImsCallSession extends ImsCallSessionImplBase {
     private static final String LOG_TAG = "HwImsCallSession";
     static final ConcurrentHashMap<String, HwImsCallSession> awaitingIdFromRIL = new ConcurrentHashMap<>();
-    private ImsCallProfile mProfile;
+    private final ImsCallProfile mProfile;
     private ImsCallProfile mLocalProfile;
     private ImsCallProfile mRemoteProfile;
     private ImsCallSessionListener listener;
@@ -65,9 +65,6 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     // For incoming (MT) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile, RILImsCall call) {
         this(slotId, profile);
-        this.mProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
-        this.mLocalProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
-        this.mRemoteProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
         updateCall(call);
         calls.put(call.number, this);
     }
@@ -134,7 +131,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         }
 
 
-        mProfile.setCallExtra(EXTRA_OI, call.number);
+        mProfile.setCallExtra(EXTRA_OI, "+" + call.number);
         mProfile.setCallExtra(EXTRA_CNA, call.name);
         mProfile.setCallExtraInt(EXTRA_OIR, ImsCallProfile.presentationToOir(call.numberPresentation));
         mProfile.setCallExtraInt(EXTRA_CNAP, ImsCallProfile.presentationToOir(call.namePresentation));
