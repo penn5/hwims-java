@@ -28,6 +28,11 @@ import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VT;
 import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VT_NODIR;
 import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VT_RX;
 import static android.telephony.ims.ImsCallProfile.CALL_TYPE_VT_TX;
+import static android.telephony.ims.ImsCallProfile.EXTRA_CNA;
+import static android.telephony.ims.ImsCallProfile.EXTRA_CNAP;
+import static android.telephony.ims.ImsCallProfile.EXTRA_OI;
+import static android.telephony.ims.ImsCallProfile.EXTRA_OIR;
+import static android.telephony.ims.ImsCallProfile.SERVICE_TYPE_NORMAL;
 
 public class HwImsCallSession extends ImsCallSessionImplBase {
     private static final String LOG_TAG = "HwImsCallSession";
@@ -49,9 +54,9 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     // For outgoing (MO) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile) {
         this.mSlotId = slotId;
-        this.mProfile = new ImsCallProfile();
-        this.mLocalProfile = new ImsCallProfile(profile.getServiceType(), profile.getCallType());
-        this.mRemoteProfile = new ImsCallProfile(profile.getServiceType(), profile.getCallType());
+        this.mProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
+        this.mLocalProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
+        this.mRemoteProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
         this.mState = State.INVALID;
     }
 
@@ -115,6 +120,13 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                 listener.callSessionTerminated(new ImsReasonInfo());
                 break;
         }
+
+
+        mProfile.setCallExtra(EXTRA_OI, call.number);
+        mProfile.setCallExtra(EXTRA_CNA, call.name);
+        mProfile.setCallExtraInt(EXTRA_OIR, ImsCallProfile.presentationToOir(call.numberPresentation));
+        mProfile.setCallExtraInt(EXTRA_CNAP, ImsCallProfile.presentationToOir(call.namePresentation));
+
         if ((lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && (!call.equals(rilImsCall)))) {
             listener.callSessionUpdated(mProfile);
         }
@@ -148,7 +160,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     @Override
     public String getProperty(String name) {
-        return null; // Right now there are no "properties" what are they even for?
+        return mProfile.getCallExtra(name);
     }
 
     @Override
@@ -255,7 +267,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     listener.callSessionInitiatedFailed(new ImsReasonInfo());
                     Rlog.e(LOG_TAG, "error accepting ims call");
                 } else {
-                    listener.callSessionInitiated(new ImsCallProfile());
+                    listener.callSessionInitiated(mProfile);
                     mInCall = true;
                 }
             }, mSlotId), convertAospCallType(callType));
