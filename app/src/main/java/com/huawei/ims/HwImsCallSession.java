@@ -38,7 +38,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     private ImsCallProfile mRemoteProfile;
     private ImsCallSessionListener listener;
 
-    private int mState = State.INVALID;
+    RILImsCall rilImsCall = null;
     private boolean mInCall = false;
 
     public static ConcurrentHashMap<String, HwImsCallSession> awaitingIdFromRIL = new ConcurrentHashMap<String, HwImsCallSession>();
@@ -47,7 +47,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     private final Object mCallIdLock = new Object();
 
     public boolean confInProgress = false;
-    RILImsCall rilImsCall;
+    private int mState = State.IDLE;
 
     // For outgoing (MO) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile) {
@@ -68,13 +68,58 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         if (awaitingIdFromRIL.remove(number, this)) {
             calls.put(number, this);
             synchronized (mCallIdLock) {
-                rilImsCall = call;
+                updateCall(call);
                 mCallIdLock.notify();
             }
         }
     }
 
     public void updateCall(RILImsCall call) {
+        int lastState = mState;
+        switch (call.state) {
+            case 0: // ACTIVE
+                if (rilImsCall == null) {
+                    mState = State.ESTABLISHED;
+                    listener.callSessionInitiated(mProfile);
+                } else if (rilImsCall.state == 2 || // DIALING
+                        rilImsCall.state == 3 || // ALERTING
+                        rilImsCall.state == 4 || // INCOMING
+                        rilImsCall.state == 5) { // WAITING
+                    mState = State.ESTABLISHED;
+                    listener.callSessionInitiated(mProfile);
+                } else if (rilImsCall.state == 1 && !confInProgress) { // HOLDING
+                    listener.callSessionResumed(mProfile);
+                } else {
+                    Rlog.e(LOG_TAG, "stuff");
+                }
+                break;
+            case 1: // HOLDING
+                listener.callSessionHeld(mProfile);
+                break;
+            case 2: // DIALING
+                if (rilImsCall == null) {
+                    Rlog.e(LOG_TAG, "Dialing an incoming call wtf?");
+                    listener.callSessionProgressing(new ImsStreamMediaProfile());
+                }
+                break;
+            case 3: // ALERTING
+                mState = State.NEGOTIATING;
+                if (rilImsCall == null) {
+                    Rlog.e(LOG_TAG, "Alerting an incoming call wtf?");
+                }
+                listener.callSessionProgressing(new ImsStreamMediaProfile());
+                break;
+            case 4: // INCOMING
+            case 5: // WAITING
+                break;
+            case 6: // END
+                mState = State.TERMINATED;
+                listener.callSessionTerminated(new ImsReasonInfo());
+                break;
+        }
+        if ((lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && (!call.equals(rilImsCall)))) {
+            listener.callSessionUpdated(mProfile);
+        }
         rilImsCall = call;
     }
 
@@ -213,10 +258,9 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     Rlog.e(LOG_TAG, "error accepting ims call");
                 } else {
                     listener.callSessionInitiated(new ImsCallProfile());
-                    mState = State.ESTABLISHED;
                     mInCall = true;
                 }
-            }, mSlotId), callType);
+            }, mSlotId), convertAospCallType(callType));
         } catch (RemoteException e) {
             listener.callSessionInitiatedFailed(new ImsReasonInfo());
             Rlog.e(LOG_TAG, "failed to accept ims call");
