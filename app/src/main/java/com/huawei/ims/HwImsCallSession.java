@@ -63,7 +63,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     // For incoming (MT) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile, RILImsCall call) {
         this(slotId, profile);
-        this.rilImsCall = call;
+        updateCall(call);
         calls.put(call.number, this);
     }
 
