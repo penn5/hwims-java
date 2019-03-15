@@ -153,6 +153,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                     Log.d(LOG_TAG, "Notifying MmTelFeature incoming call! " + redactCall(call));
                     Bundle extras = new Bundle();
                     HwImsCallSession callSession = new HwImsCallSession(mSlotId, new ImsCallProfile(), call);
+                    extras.putInt(ImsManager.EXTRA_PHONE_ID, mSlotId);
                     extras.putString(ImsManager.EXTRA_CALL_ID, callSession.getCallId());
                     HwImsService.getInstance().createMmTelFeature(mSlotId).notifyIncomingCall(callSession, extras);
                     // An incoming call that we have never seen before, tell the framework.
