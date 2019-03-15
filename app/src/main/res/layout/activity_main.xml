@@ -15,79 +15,63 @@
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:orientation="vertical">
 
-    <Button
-        android:id="@+id/rild0"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="restartRILD0"
-        android:text="Restart RILD 0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/rild1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="restartRILD1"
-        android:text="Restart RILD 1"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rild0" />
+        <Button
+            android:id="@+id/rild0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="restartRILD0"
+            android:text="Restart RILD 0" />
 
-    <Button
-        android:id="@+id/rild2"
-        android:onClick="restartRILD2"
-        android:text="Restart RILD 2"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rild1" />
+        <Button
+            android:id="@+id/rild1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="restartRILD1"
+            android:text="Restart RILD 1" />
 
-    <Button
-        android:id="@+id/fake_reg_0"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="fakeReg0"
-        android:text="Fake Registration 0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rild2" />
+        <Button
+            android:id="@+id/rild2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="restartRILD2"
+            android:text="Restart RILD 2" />
 
-    <Button
-        android:id="@+id/fake_reg_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="fakeReg1"
-        android:text="Fake Registration 1"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fake_reg_0" />
+        <Button
+            android:id="@+id/fake_reg_0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="fakeReg0"
+            android:text="Fake Registration 0" />
 
-    <Button
-        android:id="@+id/fake_reg_2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="fakeReg2"
-        android:text="Fake Registration 2"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fake_reg_1" />
+        <Button
+            android:id="@+id/fake_reg_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="fakeReg1"
+            android:text="Fake Registration 1" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/license"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/fake_reg_2" />
+        <Button
+            android:id="@+id/fake_reg_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="fakeReg2"
+            android:text="Fake Registration 2" />
 
-</android.support.constraint.ConstraintLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/license"
+            android:textSize="9sp" />
+
+    </LinearLayout>
+</ScrollView>
