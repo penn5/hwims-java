@@ -149,7 +149,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
 
         mProfile.setCallExtra(EXTRA_OI, "+" + call.number);
-        mProfile.setCallExtra(EXTRA_CNA, call.name);
+        mProfile.setCallExtra(EXTRA_CNA, call.name.isEmpty() ? call.number : call.name);
         mProfile.setCallExtraInt(EXTRA_OIR, ImsCallProfile.presentationToOir(call.numberPresentation));
         mProfile.setCallExtraInt(EXTRA_CNAP, ImsCallProfile.presentationToOir(call.namePresentation));
 
