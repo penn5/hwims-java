@@ -138,9 +138,9 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
         mCallee = call.number;
 
-        //if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && (!call.equals(rilImsCall)) && listener != null) {
+        if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && (!call.equals(rilImsCall)) && listener != null) {
             listener.callSessionUpdated(mProfile);
-        //}
+        }
         rilImsCall = call;
     }
 
