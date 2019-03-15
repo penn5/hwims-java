@@ -1,3 +1,7 @@
+plugins {
+    id 'com.gladed.androidgitversion' version '0.4.9'
+}
+
 apply plugin: 'com.android.application'
 
 android {
@@ -14,8 +18,8 @@ android {
         applicationId "com.huawei.ims"
         minSdkVersion 28
         targetSdkVersion 28
-        versionCode 1
-        versionName "alpha0"
+        versionCode androidGitVersion.code()
+        versionName androidGitVersion.name()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.config
     }
