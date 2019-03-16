@@ -147,11 +147,12 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                 break;
         }
 
-
-        mProfile.setCallExtra(EXTRA_OI, "+" + call.number);
-        mProfile.setCallExtra(EXTRA_CNA, call.name.isEmpty() ? call.number : call.name);
-        mProfile.setCallExtraInt(EXTRA_OIR, ImsCallProfile.presentationToOir(call.numberPresentation));
-        mProfile.setCallExtraInt(EXTRA_CNAP, ImsCallProfile.presentationToOir(call.namePresentation));
+        if (call.isMT > 0) { // OI is the originating identity, it should only be set for incoming calls
+            mProfile.setCallExtra(EXTRA_OI, "+" + call.number);
+            mProfile.setCallExtra(EXTRA_CNA, call.name.isEmpty() ? call.number : call.name);
+            mProfile.setCallExtraInt(EXTRA_OIR, ImsCallProfile.presentationToOir(call.numberPresentation));
+            mProfile.setCallExtraInt(EXTRA_CNAP, ImsCallProfile.presentationToOir(call.namePresentation));
+        }
 
         mCallee = call.number;
 
