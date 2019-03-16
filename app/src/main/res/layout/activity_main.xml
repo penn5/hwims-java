@@ -30,12 +30,14 @@
             android:layout_height="wrap_content"
             android:text="@string/warning"
             android:textColor="#ff3333"
+            android:onClick="ims0"
             android:textSize="20sp" />
 
         <Switch
             android:id="@+id/ims0"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:onClick="ims1"
             android:text="Enable IMS Sim 0" />
 
         <Switch
