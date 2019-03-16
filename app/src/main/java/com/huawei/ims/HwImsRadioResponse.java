@@ -139,7 +139,6 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
     @Override
     public void getCurrentImsCallsResponse(RadioResponseInfo radioResponseInfo, ArrayList<RILImsCall> arrayList) {
         // Huawei
-        //TODO find the right way to do this, if there even is a better way
         ArrayList<String> calls = new ArrayList<>(arrayList.size());
         for (RILImsCall call : arrayList) {
             Log.d(LOG_TAG, "calls list contains " + redactCall(call));
@@ -151,23 +150,20 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
             if (session == null) {
                 if (call.isMT > 0) {
                     Log.d(LOG_TAG, "Notifying MmTelFeature incoming call! " + redactCall(call));
-                    Bundle extras = new Bundle();
-                    HwImsCallSession callSession = new HwImsCallSession(mSlotId, new ImsCallProfile(), call);
-                    extras.putInt(ImsManager.EXTRA_PHONE_ID, mSlotId);
-                    extras.putString(ImsManager.EXTRA_CALL_ID, callSession.getCallId());
-                    HwImsService.getInstance().createMmTelFeature(mSlotId).notifyIncomingCall(callSession, extras);
                     // An incoming call that we have never seen before, tell the framework.
                 } else {
                     Log.e(LOG_TAG, "Phantom Call!!!! " + redactCall(call));
                     HwImsCallSession.calls.forEach((s, hwImsCallSession) -> Rlog.d(LOG_TAG, "Phantom debugging got call in static calls " + redactCall(hwImsCallSession.rilImsCall) + " with number " + s));
-                    // A phantom call that *should* have been in awaitingIdFromRil but wasn't, TODO handle this error somehow, maybe reject it?
-                    // Maybe conference calls go here? who knows TODO
-                    Bundle extras = new Bundle();
-                    HwImsCallSession callSession = new HwImsCallSession(mSlotId, new ImsCallProfile(), call);
-                    extras.putString(ImsManager.EXTRA_CALL_ID, callSession.getCallId());
-                    extras.putBoolean(ImsManager.EXTRA_IS_UNKNOWN_CALL, true);
-                    HwImsService.getInstance().createMmTelFeature(mSlotId).notifyIncomingCall(callSession, extras);
+                    // Someone has been talking to AT... naughty.
                 }
+                Bundle extras = new Bundle();
+                HwImsCallSession callSession = new HwImsCallSession(mSlotId, new ImsCallProfile(), call);
+                extras.putInt(ImsManager.EXTRA_PHONE_ID, mSlotId);
+                extras.putString(ImsManager.EXTRA_CALL_ID, callSession.getCallId());
+                extras.putBoolean(ImsManager.EXTRA_IS_UNKNOWN_CALL, call.isMT == 0); // A new outgoing call should never happen. Someone is playing with AT commands or talking to the modem.
+                HwImsService.getInstance().createMmTelFeature(mSlotId).notifyIncomingCall(callSession, extras);
+
+
             } else {
                 // Existing call, update it's data.
                 session.updateCall(call);
