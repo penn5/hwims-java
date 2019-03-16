@@ -17,6 +17,7 @@
 
 package com.huawei.ims;
 
+import android.content.Context;
 import android.telephony.TelephonyManager;
 import android.telephony.ims.ImsService;
 import android.telephony.ims.feature.ImsFeature;
@@ -28,8 +29,8 @@ import android.util.Log;
 public class HwImsService extends ImsService {
     private static final String LOG_TAG = "HwImsService";
     private static HwImsService mInstance = null;
-    private final HwMmTelFeature[] mmTelFeatures = {null, null, null};
-    private final HwImsRegistration[] registrations = {null, null, null};
+    private final HwMmTelFeature[] mmTelFeatures = {null, null};
+    private final HwImsRegistration[] registrations = {null, null};
     private final HwImsConfig[] configs = new HwImsConfig[3];
 
     public static HwImsService getInstance() {
@@ -59,15 +60,17 @@ public class HwImsService extends ImsService {
         mInstance = this;
     }
 
-    private boolean supportsDualIms() {
-        return HwModemCapability.isCapabilitySupport(21) && getSystemService(TelephonyManager.class).getPhoneCount() > 1;
+    public static boolean supportsDualIms(Context context) {
+        return HwModemCapability.isCapabilitySupport(21) && context.getSystemService(TelephonyManager.class).getPhoneCount() > 1;
     }
 
     @Override
     public ImsFeatureConfiguration querySupportedImsFeatures() {
-        ImsFeatureConfiguration.Builder builder = new ImsFeatureConfiguration.Builder()
-                .addFeature(0, ImsFeature.FEATURE_MMTEL); // assume it works.
-        if (supportsDualIms()) {
+        ImsFeatureConfiguration.Builder builder = new ImsFeatureConfiguration.Builder();
+        if (getSharedPreferences("config", MODE_PRIVATE).getBoolean("ims0", true)) {
+            builder.addFeature(0, ImsFeature.FEATURE_MMTEL);
+        }
+        if (supportsDualIms(this) && getSharedPreferences("config", MODE_PRIVATE).getBoolean("ims1", false)) {
             builder.addFeature(1, ImsFeature.FEATURE_MMTEL);
         }
         return builder.build();
@@ -75,6 +78,9 @@ public class HwImsService extends ImsService {
 
     @Override
     public MmTelFeature createMmTelFeature(int slotId) {
+        if (slotId > 0 && !supportsDualIms(this)) {
+            return null;
+        }
         if (mmTelFeatures[slotId] == null) {
             mmTelFeatures[slotId] = HwMmTelFeature.getInstance(slotId);
             registrations[slotId] = new HwImsRegistration();
@@ -84,6 +90,9 @@ public class HwImsService extends ImsService {
 
     @Override
     public ImsConfigImplBase getConfig(int slotId) {
+        if (slotId > 0 && !supportsDualIms(this)) {
+            return null;
+        }
         if (configs[slotId] == null) {
             configs[slotId] = new HwImsConfig();
         }
@@ -92,6 +101,9 @@ public class HwImsService extends ImsService {
 
     @Override
     public HwImsRegistration getRegistration(int slotId) {
+        if (slotId > 0 && !supportsDualIms(this)) {
+            return null;
+        }
         if (this.registrations[slotId] == null) {
             registrations[slotId] = new HwImsRegistration();
         }

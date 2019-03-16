@@ -25,6 +25,25 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/warning"
+            android:textColor="#ff3333"
+            android:textSize="20sp" />
+
+        <Switch
+            android:id="@+id/ims0"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enable IMS Sim 0" />
+
+        <Switch
+            android:id="@+id/ims1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enable IMS Sim 1" />
+
         <Button
             android:id="@+id/rild0"
             android:layout_width="wrap_content"
@@ -46,26 +65,6 @@
             android:onClick="restartRILD2"
             android:text="Restart RILD 2" />
 
-        <Button
-            android:id="@+id/fake_reg_0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="fakeReg0"
-            android:text="Fake Registration 0" />
-
-        <Button
-            android:id="@+id/fake_reg_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="fakeReg1"
-            android:text="Fake Registration 1" />
-
-        <Button
-            android:id="@+id/fake_reg_2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="fakeReg2"
-            android:text="Fake Registration 2" />
 
         <TextView
             android:layout_width="match_parent"

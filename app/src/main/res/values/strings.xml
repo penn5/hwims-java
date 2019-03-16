@@ -47,4 +47,5 @@ This project incorporates code covered by the following copyright and permission
     See the License for the specific language governing permissions and
     limitations under the License.
 This project links into proprietary code written by Huawei. No license assertions are made regarding to that."</string>
+    <string name="warning">WARNING!!! Do not uninstall this app without toggling both switches to off!!!</string>
 </resources>
