@@ -106,7 +106,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     private int hwOirToOir(int oir) {
         switch (oir) {
             case OIR_BEHAVIOUR_TYPE_DEFAULT:
-                return ImsCallProfile.OIR_DEFAULT;
+                return ImsCallProfile.OIR_PRESENTATION_NOT_RESTRICTED;
             case OIR_BEHAVIOUR_TYPE_NOT_RESTRICTED:
                 return ImsCallProfile.OIR_PRESENTATION_NOT_RESTRICTED;
             case OIR_BEHAVIOUR_TYPE_NOT_SUBSCRIBED:
