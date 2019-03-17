@@ -181,7 +181,6 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
             }
             calls.add(call.number);
         }
-        Rlog.v(LOG_TAG, "active calls is " + calls.toString());
         for (Map.Entry<String, HwImsCallSession> call : HwImsCallSession.calls.entrySet()) {
             if (!calls.contains(call.getKey())) {
                 try {
@@ -195,7 +194,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
     }
 
     private String redactCall(RILImsCall call) {
-        return "{.state = " + call.state + ", .index = " + call.index + ", .toa = " + call.toa + ", .isMpty = " + call.isMpty + ", .isMT = " + call.isMT + ", .als = " + call.als + ", .isVoice = " + call.isVoice + ", .isVoicePrivacy = " + call.isVoicePrivacy + ", .number = " + call.number + ", .numberPresentation = " + call.numberPresentation + ", .name = " + call.name + ", .namePresentation = " + call.namePresentation + ", .callDetails = " + call.callDetails.toString() + ", .isEConference = " + call.isECOnference + ", .peerVideoSupport = " + call.peerVideoSupport + "}";
+        return "{.state = " + call.state + ", .index = " + call.index + ", .toa = " + call.toa + ", .isMpty = " + call.isMpty + ", .isMT = " + call.isMT + ", .als = " + call.als + ", .isVoice = " + call.isVoice + ", .isVoicePrivacy = " + call.isVoicePrivacy + ", .number = " + Rlog.pii(LOG_TAG, call.number) + ", .numberPresentation = " + call.numberPresentation + ", .name = " + Rlog.pii(LOG_TAG, call.name) + ", .namePresentation = " + call.namePresentation + ", .callDetails = " + call.callDetails.toString() + ", .isEConference = " + call.isECOnference + ", .peerVideoSupport = " + call.peerVideoSupport + "}";
     }
 
     @Override
