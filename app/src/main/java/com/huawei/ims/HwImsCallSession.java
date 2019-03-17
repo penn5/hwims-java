@@ -52,6 +52,13 @@ import static android.telephony.ims.ImsCallProfile.EXTRA_OIR;
 import static android.telephony.ims.ImsCallProfile.SERVICE_TYPE_NORMAL;
 
 public class HwImsCallSession extends ImsCallSessionImplBase {
+    private static final int OIR_BEHAVIOUR_TYPE_DEFAULT = 0;
+    private static final int OIR_BEHAVIOUR_TYPE_NOT_RESTRICTED = 1;
+    private static final int OIR_BEHAVIOUR_TYPE_RESTRICTED = 2;
+    private static final int OIR_BEHAVIOUR_TYPE_NOT_SUBSCRIBED = 3;
+
+
+
     private static final String LOG_TAG = "HwImsCallSession";
     static final ConcurrentHashMap<String, HwImsCallSession> awaitingIdFromRIL = new ConcurrentHashMap<>();
     private final ImsCallProfile mProfile;
@@ -93,6 +100,21 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                 updateCall(call);
                 mCallIdLock.notify();
             }
+        }
+    }
+
+    private int hwOirToOir(int oir) {
+        switch (oir) {
+            case OIR_BEHAVIOUR_TYPE_DEFAULT:
+                return ImsCallProfile.OIR_DEFAULT;
+            case OIR_BEHAVIOUR_TYPE_NOT_RESTRICTED:
+                return ImsCallProfile.OIR_PRESENTATION_NOT_RESTRICTED;
+            case OIR_BEHAVIOUR_TYPE_NOT_SUBSCRIBED:
+                return ImsCallProfile.OIR_PRESENTATION_PAYPHONE;
+            case OIR_BEHAVIOUR_TYPE_RESTRICTED:
+                return ImsCallProfile.OIR_PRESENTATION_RESTRICTED;
+            default:
+                return ImsCallProfile.OIR_PRESENTATION_UNKNOWN;
         }
     }
 
@@ -149,9 +171,10 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
         if (call.isMT > 0) { // OI is the originating identity, it should only be set for incoming calls
             mProfile.setCallExtra(EXTRA_OI, "+" + call.number);
+            mProfile.setCallExtraInt(EXTRA_OIR, hwOirToOir(call.numberPresentation));
             mProfile.setCallExtra(EXTRA_CNA, call.name.isEmpty() ? call.number : call.name);
-            mProfile.setCallExtraInt(EXTRA_OIR, ImsCallProfile.presentationToOir(call.numberPresentation));
-            mProfile.setCallExtraInt(EXTRA_CNAP, ImsCallProfile.presentationToOir(call.namePresentation));
+            mProfile.setCallExtraInt(EXTRA_CNAP, hwOirToOir(call.namePresentation));
+
         }
 
         mCallee = call.number;
