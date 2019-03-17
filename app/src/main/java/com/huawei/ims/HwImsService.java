@@ -86,7 +86,7 @@ public class HwImsService extends ImsService {
         }
         if (mmTelFeatures[slotId] == null) {
             mmTelFeatures[slotId] = HwMmTelFeature.getInstance(slotId);
-            registrations[slotId] = new HwImsRegistration();
+            registrations[slotId] = new HwImsRegistration(slotId);
         }
         return mmTelFeatures[slotId];
     }
@@ -108,7 +108,7 @@ public class HwImsService extends ImsService {
             return null;
         }
         if (this.registrations[slotId] == null) {
-            registrations[slotId] = new HwImsRegistration();
+            registrations[slotId] = new HwImsRegistration(slotId);
         }
         return this.registrations[slotId];
     }
