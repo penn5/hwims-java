@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.x = null;
-        prefs = getSharedPreferences("config", MODE_PRIVATE);
+        prefs = createDeviceProtectedStorageContext().getSharedPreferences("config", MODE_PRIVATE);
         ims0state = prefs.getBoolean("ims0", true);
         ims1state = prefs.getBoolean("ims1", false);
         ((Switch) findViewById(R.id.ims0)).setChecked(ims0state);

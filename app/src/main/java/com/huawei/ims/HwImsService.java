@@ -18,6 +18,7 @@
 package com.huawei.ims;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.telephony.TelephonyManager;
 import android.telephony.ims.ImsService;
 import android.telephony.ims.feature.ImsFeature;
@@ -32,6 +33,7 @@ public class HwImsService extends ImsService {
     private final HwMmTelFeature[] mmTelFeatures = {null, null};
     private final HwImsRegistration[] registrations = {null, null};
     private final HwImsConfig[] configs = new HwImsConfig[3];
+    private SharedPreferences prefs;
 
     public static HwImsService getInstance() {
         return mInstance;
@@ -40,6 +42,7 @@ public class HwImsService extends ImsService {
     @Override
     public void onCreate() {
         Log.v(LOG_TAG, "HwImsService created!");
+        prefs = createDeviceProtectedStorageContext().getSharedPreferences("config", MODE_PRIVATE);
     }
 
     @Override
@@ -67,10 +70,10 @@ public class HwImsService extends ImsService {
     @Override
     public ImsFeatureConfiguration querySupportedImsFeatures() {
         ImsFeatureConfiguration.Builder builder = new ImsFeatureConfiguration.Builder();
-        if (getSharedPreferences("config", MODE_PRIVATE).getBoolean("ims0", true)) {
+        if (prefs.getBoolean("ims0", true)) {
             builder.addFeature(0, ImsFeature.FEATURE_MMTEL);
         }
-        if (supportsDualIms(this) && getSharedPreferences("config", MODE_PRIVATE).getBoolean("ims1", false)) {
+        if (supportsDualIms(this) && prefs.getBoolean("ims1", false)) {
             builder.addFeature(1, ImsFeature.FEATURE_MMTEL);
         }
         return builder.build();
