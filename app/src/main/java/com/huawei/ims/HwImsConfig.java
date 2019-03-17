@@ -44,22 +44,24 @@ public class HwImsConfig extends ImsConfigImplBase {
     private final ConcurrentHashMap<Integer, Integer> configInt = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, String> configString = new ConcurrentHashMap<>();
 
-
     @Override
     public int setConfig(int item, int value) {
         configInt.put(item, value);
+        notifyProvisionedValueChanged(item, value);
         return ImsConfig.OperationStatusConstants.SUCCESS;
     }
 
     @Override
     public int setConfig(int item, String value) {
         configString.put(item, value);
+        notifyProvisionedValueChanged(item, value);
         return ImsConfig.OperationStatusConstants.SUCCESS;
     }
 
     @Override
     public int getConfigInt(@NonNull int item) {
         if (configInt.containsKey(item)) {
+            //noinspection ConstantConditions
             return configInt.get(item);
         } else {
             return ImsConfig.FeatureValueConstants.ERROR;

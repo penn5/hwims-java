@@ -76,26 +76,25 @@ public class HwMmTelFeature extends MmTelFeature {
                 if (radioResponseInfo.error != 0) {
                     Log.e(LOG_TAG, "radiorespinfo gives error " + radioResponseInfo.error);
                     HwImsService.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo(ImsReasonInfo.CODE_UNSPECIFIED, radioResponseInfo.error, radioResponseInfo.toString() + rspMsgPayload.toString()));
-                    throw new RuntimeException();
                 } else {
                     MmTelCapabilities capabilities = new MmTelCapabilities();
                     capabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
                     notifyCapabilitiesStatusChanged(capabilities);
-                    HwImsService.getInstance().getRegistration(mSlotId).onRegistered(HwImsRegistration.REGISTRATION_TECH_LTE);
+                    HwImsService.getInstance().getRegistration(mSlotId).notifyRegistered(HwImsRegistration.REGISTRATION_TECH_LTE);
                 }
             }, mSlotId));
         } catch (RemoteException e) {
-            HwImsService.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
+            HwImsService.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
             Log.e(LOG_TAG, "error registering ims", e);
         }
     }
 
     public void registerIms() {
-        HwImsService.getInstance().getRegistration(mSlotId).onRegistering(HwImsRegistration.REGISTRATION_TECH_LTE);
+        HwImsService.getInstance().getRegistration(mSlotId).notifyRegistering(HwImsRegistration.REGISTRATION_TECH_LTE);
         try {
             RilHolder.INSTANCE.getRadio(mSlotId).setImsSwitch(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error != 0) {
-                    HwImsService.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo());
+                    HwImsService.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
                 } else {
                     registerImsInner();
                 }

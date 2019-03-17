@@ -17,8 +17,31 @@
 
 package com.huawei.ims;
 
+import android.telephony.ims.ImsReasonInfo;
 import android.telephony.ims.stub.ImsRegistrationImplBase;
 
-public class HwImsRegistration extends ImsRegistrationImplBase {
+import com.android.ims.ImsConfig;
 
+public class HwImsRegistration extends ImsRegistrationImplBase {
+    private int mSlotId;
+
+    public HwImsRegistration(int slotId) {
+        mSlotId = slotId;
+    }
+
+    // BEWARE FUTURE ME: https://android-review.googlesource.com/c/platform/frameworks/base/+/809459 is changing this big-time in AOSP Q
+
+    public void notifyRegistered(@ImsRegistrationTech int imsRadioTech) {
+        this.onRegistered(imsRadioTech);
+        HwImsService.getInstance().getConfig(mSlotId).setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, ImsConfig.FeatureValueConstants.ON);
+    }
+
+    public void notifyRegistering(@ImsRegistrationTech int imsRadioTech) {
+        this.onRegistering(imsRadioTech);
+    }
+
+    public void notifyDeregistered(ImsReasonInfo info) {
+        HwImsService.getInstance().getConfig(mSlotId).setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, ImsConfig.FeatureValueConstants.OFF);
+        this.onDeregistered(info);
+    }
 }
