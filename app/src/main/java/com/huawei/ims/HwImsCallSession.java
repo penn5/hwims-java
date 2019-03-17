@@ -24,7 +24,9 @@ import android.telephony.ims.ImsCallProfile;
 import android.telephony.ims.ImsCallSessionListener;
 import android.telephony.ims.ImsReasonInfo;
 import android.telephony.ims.ImsStreamMediaProfile;
+import android.telephony.ims.feature.MmTelFeature;
 import android.telephony.ims.stub.ImsCallSessionImplBase;
+import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.util.Log;
 
 import java.util.Objects;
@@ -293,7 +295,12 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
             throw e;
         }
         callInfo.callDetails.callType = callType;
-        callInfo.callDetails.callDomain = RILImsCallDomain.CALL_DOMAIN_AUTOMATIC;
+        if (HwImsService.getInstance().createMmTelFeature(mSlotId).queryCapabilityConfiguration(ImsRegistrationImplBase.REGISTRATION_TECH_LTE, MmTelFeature.MmTelCapabilities.CAPABILITY_TYPE_VOICE)) {
+            callInfo.callDetails.callDomain = RILImsCallDomain.CALL_DOMAIN_AUTOMATIC;
+        } else {
+            callInfo.callDetails.callDomain = RILImsCallDomain.CALL_DOMAIN_CS;
+        }
+
         try {
             awaitingIdFromRIL.put(callee, this); // Do it sooner rather than later so that this call is not seen as a phantom
             RilHolder.INSTANCE.getRadio(mSlotId).imsDial(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
