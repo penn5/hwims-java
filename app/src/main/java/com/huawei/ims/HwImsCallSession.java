@@ -188,9 +188,14 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     private void die(ImsReasonInfo reason) {
         calls.remove(mCallee);
         awaitingIdFromRIL.remove(mCallee);
+        mState = State.TERMINATED;
         if (listener != null) {
             listener.callSessionTerminated(reason);
         }
+    }
+
+    public void notifyEnded() {
+        die(new ImsReasonInfo());
     }
 
     @Override

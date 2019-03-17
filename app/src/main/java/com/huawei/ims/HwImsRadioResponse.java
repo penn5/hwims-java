@@ -185,9 +185,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
             if (!calls.contains(call.getKey())) {
                 try {
                     Rlog.d(LOG_TAG, "notifying dead call " + redactCall(call.getValue().rilImsCall));
-                    //call.getValue().notifyDead();
-                    // It looks like this isn't actually needed since we get STATE=6 when its dead.
-                    // Also this causes issues because incoming calls don't show up here.
+                    call.getValue().notifyEnded();
                 } catch (RuntimeException e) {
                     Rlog.e(LOG_TAG, "error notifying dead call!", e);
                 }
