@@ -295,11 +295,11 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         callInfo.callDetails.callType = callType;
         callInfo.callDetails.callDomain = RILImsCallDomain.CALL_DOMAIN_AUTOMATIC;
         try {
+            awaitingIdFromRIL.put(callee, this); // Do it sooner rather than later so that this call is not seen as a phantom
             RilHolder.INSTANCE.getRadio(mSlotId).imsDial(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error == 0) {
                     Rlog.e(LOG_TAG, "MADE AN IMS CALL OMG WOW");
                     Log.e(LOG_TAG, "MADE AN IMS CALL OMG WOW");
-                    awaitingIdFromRIL.put(callee, this);
                     mInCall = true;
                     mState = State.ESTABLISHED;
                     listener.callSessionInitiated(profile);
@@ -307,11 +307,13 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     Rlog.e(LOG_TAG, "Failed to make ims call :(");
                     Log.e(LOG_TAG, "failed to make ims call :(");
                     mState = State.TERMINATED;
+                    awaitingIdFromRIL.remove(callee, this);
                     listener.callSessionInitiatedFailed(new ImsReasonInfo());
                 }
             }, mSlotId), callInfo);
         } catch (RemoteException e) {
             listener.callSessionInitiatedFailed(new ImsReasonInfo());
+            awaitingIdFromRIL.remove(callee, this);
             Rlog.e(LOG_TAG, "Sending imsDial failed with exception", e);
         }
     }

@@ -154,6 +154,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                 } else {
                     Log.e(LOG_TAG, "Phantom Call!!!! " + redactCall(call));
                     HwImsCallSession.calls.forEach((s, hwImsCallSession) -> Rlog.d(LOG_TAG, "Phantom debugging got call in static calls " + redactCall(hwImsCallSession.rilImsCall) + " with number " + s));
+                    HwImsCallSession.awaitingIdFromRIL.forEach((s, hwImsCallSession) -> Rlog.d(LOG_TAG, "Phantom debugging got call in static awaiting " + redactCall(hwImsCallSession.rilImsCall) + " with number " + s));
                     // Someone has been talking to AT... naughty.
                 }
                 Bundle extras = new Bundle();
