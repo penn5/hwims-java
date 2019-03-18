@@ -144,6 +144,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
             Log.d(LOG_TAG, "calls list contains " + redactCall(call));
             HwImsCallSession session = HwImsCallSession.awaitingIdFromRIL.get(call.number);
             if (session != null) {
+                Rlog.d(LOG_TAG, "giving call id from ril.");
                 session.addIdFromRIL(call, call.number);
             }
             session = HwImsCallSession.calls.get(call.number);

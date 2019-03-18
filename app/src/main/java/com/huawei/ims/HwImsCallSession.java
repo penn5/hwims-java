@@ -79,8 +79,12 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     public String mCallee;
 
+    private static int sCount = 0;
+    private int mCount;
+
     // For outgoing (MO) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile) {
+        this.mCount = sCount++;
         this.mSlotId = slotId;
         this.mProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
         this.mLocalProfile = new ImsCallProfile(SERVICE_TYPE_NORMAL, profile.getCallType());
@@ -147,11 +151,8 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     listener.callSessionHeld(mProfile);
                 break;
             case 2: // DIALING
-                if (rilImsCall == null) {
-                    Rlog.e(LOG_TAG, "Dialing an incoming call wtf?");
-                    if (listener != null)
-                        listener.callSessionProgressing(new ImsStreamMediaProfile());
-                }
+                if (listener != null)
+                    listener.callSessionProgressing(new ImsStreamMediaProfile());
                 break;
             case 3: // ALERTING
                 mState = State.NEGOTIATING;
@@ -204,7 +205,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     @Override
     public String getCallId() {
-        return "slot" + mSlotId + "id" + rilImsCall.index;
+        return "slot" + mSlotId + "id" + (rilImsCall == null ? "unknown!" + Integer.toString(mCount) : rilImsCall.index);
     }
 
     @Override
@@ -279,6 +280,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     @Override
     public void start(String callee, ImsCallProfile profile) {
+        Log.d(LOG_TAG, "calling " + Rlog.pii(LOG_TAG, callee));
         mCallee = callee;
         RILImsDial callInfo = new RILImsDial();
         callInfo.address = callee;
@@ -302,6 +304,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         }
 
         try {
+            Rlog.d(LOG_TAG, "adding to awaiting id from ril");
             awaitingIdFromRIL.put(callee, this); // Do it sooner rather than later so that this call is not seen as a phantom
             RilHolder.INSTANCE.getRadio(mSlotId).imsDial(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error == 0) {
