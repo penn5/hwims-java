@@ -19,7 +19,6 @@ package com.huawei.ims;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.SystemProperties;
 import android.telephony.TelephonyManager;
 import android.telephony.ims.ImsService;
 import android.telephony.ims.feature.ImsFeature;
@@ -27,8 +26,6 @@ import android.telephony.ims.feature.MmTelFeature;
 import android.telephony.ims.stub.ImsConfigImplBase;
 import android.telephony.ims.stub.ImsFeatureConfiguration;
 import android.util.Log;
-
-import com.android.ims.ImsManager;
 
 public class HwImsService extends ImsService {
     private static final String LOG_TAG = "HwImsService";
@@ -46,8 +43,6 @@ public class HwImsService extends ImsService {
     public void onCreate() {
         Log.v(LOG_TAG, "HwImsService created!");
         prefs = createDeviceProtectedStorageContext().getSharedPreferences("config", MODE_PRIVATE);
-        SystemProperties.set("persist.dbg.ims_volte_enable", "1");
-        SystemProperties.set(ImsManager.PROPERTY_DBG_VOLTE_AVAIL_OVERRIDE, "1");
     }
 
     @Override
