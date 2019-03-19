@@ -23,5 +23,5 @@ steps:
     tasks: 'assembleDebug'
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.SourcesDirectory)/app/debug/app-debug.apk'
+    PathtoPublish: '$(Build.SourcesDirectory)/app/build/outputs/apk/debug/app-debug.apk'
     ArtifactName: 'apk'
