@@ -22,6 +22,14 @@ plugins {
 apply plugin: 'com.android.application'
 
 android {
+    def getGitHash = { ->
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-parse', 'HEAD'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    }
     signingConfigs {
         config {
             keyAlias 'android'
@@ -39,6 +47,7 @@ android {
         versionName androidGitVersion.name()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.config
+        buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
     }
     buildTypes {
         release {

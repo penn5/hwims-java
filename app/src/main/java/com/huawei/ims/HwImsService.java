@@ -41,7 +41,7 @@ public class HwImsService extends ImsService {
 
     @Override
     public void onCreate() {
-        Log.v(LOG_TAG, "HwImsService created!");
+        Log.v(LOG_TAG, "HwImsService version " + BuildConfig.GIT_HASH + " created!");
         prefs = createDeviceProtectedStorageContext().getSharedPreferences("config", MODE_PRIVATE);
     }
 
