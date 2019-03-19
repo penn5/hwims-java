@@ -70,7 +70,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     RILImsCall rilImsCall = null;
     private boolean mInCall = false;
-    static final ConcurrentHashMap<String, HwImsCallSession> calls = new ConcurrentHashMap<>();
+    static final ConcurrentHashMap<Integer, HwImsCallSession> calls = new ConcurrentHashMap<Integer, HwImsCallSession>();
     private final int mSlotId;
 
     private final Object mCallIdLock = new Object();
@@ -96,17 +96,17 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     public HwImsCallSession(int slotId, ImsCallProfile profile, RILImsCall call) {
         this(slotId, profile);
         updateCall(call);
-        calls.put(call.number, this);
+        calls.put(call.index, this);
     }
 
     public void addIdFromRIL(RILImsCall call) {
         String number = "+"+call.number;
         if (awaitingIdFromRIL.remove(number, this)) {
-            calls.put(number, this);
             synchronized (mCallIdLock) {
                 updateCall(call);
                 mCallIdLock.notify();
             }
+            calls.put(call.index, this);
         }
     }
 
@@ -187,7 +187,8 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     }
 
     private void die(ImsReasonInfo reason) {
-        calls.remove(mCallee);
+        if (rilImsCall != null)
+            calls.remove(rilImsCall.index);
         awaitingIdFromRIL.remove(mCallee);
         mState = State.TERMINATED;
         if (listener != null) {

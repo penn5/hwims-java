@@ -101,9 +101,7 @@ public class HwMmTelFeature extends MmTelFeature {
 
             }, mSlotId), 1);
         } catch (RemoteException e) {
-            // This happens when it's already set to 1. Continue to register.
-            Log.w(LOG_TAG, "Failed to set ims switch. Continue");
-            registerImsInner();
+            HwImsService.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
         }
 
 

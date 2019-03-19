@@ -65,7 +65,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
     private static final String LOG_TAG = "HwImsRadioResponse";
     private final int mSlotId;
 
-    public HwImsRadioResponse(int slotId) {
+    HwImsRadioResponse(int slotId) {
         mSlotId = slotId;
     }
 
@@ -139,15 +139,15 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
     @Override
     public void getCurrentImsCallsResponse(RadioResponseInfo radioResponseInfo, ArrayList<RILImsCall> arrayList) {
         // Huawei
-        ArrayList<String> calls = new ArrayList<>(arrayList.size());
+        ArrayList<Integer> calls = new ArrayList<>(arrayList.size());
         for (RILImsCall call : arrayList) {
             Log.d(LOG_TAG, "calls list contains " + redactCall(call));
-            HwImsCallSession session = HwImsCallSession.awaitingIdFromRIL.get("+"+call.number);
+            HwImsCallSession session = HwImsCallSession.awaitingIdFromRIL.get(call.number);
             if (session != null) {
                 Rlog.d(LOG_TAG, "giving call id from ril.");
                 session.addIdFromRIL(call);
             }
-            session = HwImsCallSession.calls.get("+"+call.number);
+            session = HwImsCallSession.calls.get(call.index);
             if (session == null) {
                 if (call.isMT > 0) {
                     Log.d(LOG_TAG, "Notifying MmTelFeature incoming call! " + redactCall(call));
@@ -180,10 +180,10 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                     }
                 }
             }
-            calls.add(call.number);
+            calls.add(call.index);
         }
-        for (Map.Entry<String, HwImsCallSession> call : HwImsCallSession.calls.entrySet()) {
-            if (!calls.contains(call.getKey())) {
+        for (Map.Entry<Integer, HwImsCallSession> call : HwImsCallSession.calls.entrySet()) {
+            if (!calls.contains(call.getValue().rilImsCall.index)) {
                 try {
                     Rlog.d(LOG_TAG, "notifying dead call " + redactCall(call.getValue().rilImsCall));
                     call.getValue().notifyEnded();
