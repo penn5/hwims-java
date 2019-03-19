@@ -99,7 +99,8 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         calls.put(call.number, this);
     }
 
-    public void addIdFromRIL(RILImsCall call, String number) {
+    public void addIdFromRIL(RILImsCall call) {
+        String number = "+"+call.number;
         if (awaitingIdFromRIL.remove(number, this)) {
             calls.put(number, this);
             synchronized (mCallIdLock) {
@@ -172,7 +173,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                 break;
         }
 
-        mProfile.setCallExtra(EXTRA_OI, (call.isMT > 0 ? "+" : "") + call.number);
+        mProfile.setCallExtra(EXTRA_OI, call.number);
         mProfile.setCallExtraInt(EXTRA_OIR, hwOirToOir(call.numberPresentation));
         mProfile.setCallExtra(EXTRA_CNA, call.name.isEmpty() ? call.number : call.name);
         mProfile.setCallExtraInt(EXTRA_CNAP, hwOirToOir(call.namePresentation));
@@ -281,7 +282,11 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     @Override
     public void start(String callee, ImsCallProfile profile) {
         Log.d(LOG_TAG, "calling " + Rlog.pii(LOG_TAG, callee));
-        mCallee = callee;
+        if (callee.charAt(0) == '+') {
+            mCallee = callee;
+        } else {
+            mCallee = "+"+callee;
+        }
         RILImsDial callInfo = new RILImsDial();
         callInfo.address = callee;
         callInfo.clir = profile.getCallExtraInt(EXTRA_OIR); // Huawei do this so it **must** be right... Oh wait...
@@ -305,7 +310,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
         try {
             Rlog.d(LOG_TAG, "adding to awaiting id from ril");
-            awaitingIdFromRIL.put(callee, this); // Do it sooner rather than later so that this call is not seen as a phantom
+            awaitingIdFromRIL.put(mCallee, this); // Do it sooner rather than later so that this call is not seen as a phantom
             RilHolder.INSTANCE.getRadio(mSlotId).imsDial(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error == 0) {
                     Rlog.e(LOG_TAG, "MADE AN IMS CALL OMG WOW");
@@ -317,13 +322,13 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
                     Rlog.e(LOG_TAG, "Failed to make ims call :(");
                     Log.e(LOG_TAG, "failed to make ims call :(");
                     mState = State.TERMINATED;
-                    awaitingIdFromRIL.remove(callee, this);
+                    awaitingIdFromRIL.remove(mCallee, this);
                     listener.callSessionInitiatedFailed(new ImsReasonInfo());
                 }
             }, mSlotId), callInfo);
         } catch (RemoteException e) {
             listener.callSessionInitiatedFailed(new ImsReasonInfo());
-            awaitingIdFromRIL.remove(callee, this);
+            awaitingIdFromRIL.remove(mCallee, this);
             Rlog.e(LOG_TAG, "Sending imsDial failed with exception", e);
         }
     }
@@ -515,6 +520,8 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
 
     @Override
     public boolean isMultiparty() {
+        if (rilImsCall == null)
+            return false;
         return rilImsCall.isMpty > 0;
     }
 

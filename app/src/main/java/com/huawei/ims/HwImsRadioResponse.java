@@ -142,12 +142,12 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
         ArrayList<String> calls = new ArrayList<>(arrayList.size());
         for (RILImsCall call : arrayList) {
             Log.d(LOG_TAG, "calls list contains " + redactCall(call));
-            HwImsCallSession session = HwImsCallSession.awaitingIdFromRIL.get(call.number);
+            HwImsCallSession session = HwImsCallSession.awaitingIdFromRIL.get("+"+call.number);
             if (session != null) {
                 Rlog.d(LOG_TAG, "giving call id from ril.");
-                session.addIdFromRIL(call, call.number);
+                session.addIdFromRIL(call);
             }
-            session = HwImsCallSession.calls.get(call.number);
+            session = HwImsCallSession.calls.get("+"+call.number);
             if (session == null) {
                 if (call.isMT > 0) {
                     Log.d(LOG_TAG, "Notifying MmTelFeature incoming call! " + redactCall(call));
@@ -155,7 +155,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                 } else {
                     Log.e(LOG_TAG, "Phantom Call!!!! " + redactCall(call));
                     HwImsCallSession.calls.forEach((s, hwImsCallSession) -> Rlog.d(LOG_TAG, "Phantom debugging got call in static calls " + redactCall(hwImsCallSession.rilImsCall) + " with number " + s));
-                    HwImsCallSession.awaitingIdFromRIL.forEach((s, hwImsCallSession) -> Rlog.d(LOG_TAG, "Phantom debugging got call in static awaiting " + redactCall(hwImsCallSession.rilImsCall) + " with number " + s));
+                    HwImsCallSession.awaitingIdFromRIL.forEach((s, hwImsCallSession) -> Rlog.d(LOG_TAG, "Phantom debugging got call in static awaiting " + hwImsCallSession.mCallee + " with number " + s));
                     // Someone has been talking to AT... naughty.
                 }
                 Bundle extras = new Bundle();
