@@ -18,6 +18,7 @@
 package com.huawei.ims;
 
 import android.os.Bundle;
+import android.os.Message;
 import android.os.RemoteException;
 import android.telephony.Rlog;
 import android.telephony.ims.ImsCallProfile;
@@ -513,7 +514,55 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
         // Huawei shim this, so do we.
     }
 
-    //TODO wtf is DTMF? Should we implement it? How? What is it for? What priority? Who knows? Who cares?
+    public void sendDtmf(char c, Message m) {
+        try {
+            RilHolder.INSTANCE.getRadio(mSlotId).sendDtmf(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
+                if (radioResponseInfo.error != 0) {
+                    Rlog.e(LOG_TAG, "send DTMF error!");
+                    //TODO we need to reply don't we? Respond with an error to DTMF
+                } else {
+                    Rlog.d(LOG_TAG, "sent dtmf ok!");
+                    if (m.replyTo != null) {
+                        try {
+                            m.replyTo.send(m);
+                        } catch (RemoteException e) {
+                            Rlog.e(LOG_TAG, "failed to reply to DTMF!", e);
+                        }
+                    }
+                }
+            }, mSlotId), Character.toString(c));
+        } catch (RemoteException e) {
+            Rlog.e(LOG_TAG, "failed to send DTMF!", e);
+        }
+    }
+
+    public void startDtmf(char c) {
+        try {
+            RilHolder.INSTANCE.getRadio(mSlotId).startDtmf(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
+                if (radioResponseInfo.error != 0) {
+                    Rlog.e(LOG_TAG, "DTMF error!");
+                } else {
+                    Rlog.d(LOG_TAG, "start dtmf ok!");
+                }
+            }, mSlotId), Character.toString(c));
+        } catch (RemoteException e) {
+            Rlog.e(LOG_TAG, "failed to start DTMF!", e);
+        }
+    }
+
+    public void stopDtmf() {
+        try {
+            RilHolder.INSTANCE.getRadio(mSlotId).stopDtmf(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
+                if (radioResponseInfo.error != 0) {
+                    Rlog.e(LOG_TAG, "stop DTMF error!");
+                } else {
+                    Rlog.d(LOG_TAG, "stopped dtmf ok!");
+                }
+            }, mSlotId));
+        } catch (RemoteException e) {
+            Rlog.e(LOG_TAG, "failed to stop DTMF!", e);
+        }
+    }
 
     //TODO USSD
 
