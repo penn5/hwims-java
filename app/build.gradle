@@ -26,7 +26,7 @@ android {
         config {
             keyAlias 'android'
             keyPassword 'android'
-            storeFile file('/home/penn/platform.jks')
+            storeFile file('platform.jks')
             storePassword 'android'
         }
     }
