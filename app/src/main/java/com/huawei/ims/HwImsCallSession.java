@@ -101,8 +101,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     }
 
     public void addIdFromRIL(RILImsCall call) {
-        String number = "+"+call.number;
-        if (awaitingIdFromRIL.remove(number, this)) {
+        if (awaitingIdFromRIL.remove(call.number, this)) {
             synchronized (mCallIdLock) {
                 updateCall(call);
                 mCallIdLock.notify();
