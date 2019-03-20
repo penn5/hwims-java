@@ -83,6 +83,8 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     private static int sCount = 0;
     private int mCount;
 
+    public static final Object sCallsLock = new Object();
+
     // For outgoing (MO) calls
     public HwImsCallSession(int slotId, ImsCallProfile profile) {
         this.mCount = sCount++;
@@ -101,12 +103,17 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     }
 
     public void addIdFromRIL(RILImsCall call) {
-        if (awaitingIdFromRIL.remove(call.number, this)) {
-            synchronized (mCallIdLock) {
-                updateCall(call);
-                mCallIdLock.notify();
+        synchronized (sCallsLock) {
+            boolean worked = awaitingIdFromRIL.remove("+"+call.number, this);
+            if (!worked)
+                worked = awaitingIdFromRIL.remove(call.number, this);
+            if (worked) {
+                synchronized (mCallIdLock) {
+                    updateCall(call);
+                    calls.put(call.index, this);
+                    mCallIdLock.notify();
+                }
             }
-            calls.put(call.index, this);
         }
     }
 
@@ -283,11 +290,7 @@ public class HwImsCallSession extends ImsCallSessionImplBase {
     @Override
     public void start(String callee, ImsCallProfile profile) {
         Log.d(LOG_TAG, "calling " + Rlog.pii(LOG_TAG, callee));
-        if (callee.charAt(0) == '+') {
-            mCallee = callee;
-        } else {
-            mCallee = "+"+callee;
-        }
+        mCallee = callee;
         RILImsDial callInfo = new RILImsDial();
         callInfo.address = callee;
         callInfo.clir = profile.getCallExtraInt(EXTRA_OIR); // Huawei do this so it **must** be right... Oh wait...

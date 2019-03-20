@@ -139,10 +139,14 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
     @Override
     public void getCurrentImsCallsResponse(RadioResponseInfo radioResponseInfo, ArrayList<RILImsCall> arrayList) {
         // Huawei
+        synchronized (HwImsCallSession.sCallsLock) {
         ArrayList<Integer> calls = new ArrayList<>(arrayList.size());
         for (RILImsCall call : arrayList) {
             Log.d(LOG_TAG, "calls list contains " + redactCall(call));
-            HwImsCallSession session = HwImsCallSession.awaitingIdFromRIL.get(call.number);
+            // RIL never gives us the leading +, so first try with one, and if its null, try again without the +.
+            HwImsCallSession session = HwImsCallSession.awaitingIdFromRIL.get("+"+call.number);
+            if (session == null)
+                session = HwImsCallSession.awaitingIdFromRIL.get(call.number);
             if (session != null) {
                 Rlog.d(LOG_TAG, "giving call id from ril.");
                 session.addIdFromRIL(call);
@@ -191,6 +195,7 @@ public class HwImsRadioResponse extends IRadioResponse.Stub {
                     Rlog.e(LOG_TAG, "error notifying dead call!", e);
                 }
             }
+        }
         }
     }
 
