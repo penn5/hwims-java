@@ -31,49 +31,45 @@
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
  */
-package com.huawei.ims;
+package com.huawei.ims
 
-import android.annotation.NonNull;
-import android.telephony.ims.stub.ImsConfigImplBase;
+import android.annotation.NonNull
+import android.telephony.ims.stub.ImsConfigImplBase
 
-import com.android.ims.ImsConfig;
+import com.android.ims.ImsConfig
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap
 
-public class HwImsConfig extends ImsConfigImplBase {
-    private final ConcurrentHashMap<Integer, Integer> configInt = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Integer, String> configString = new ConcurrentHashMap<>();
+class HwImsConfig : ImsConfigImplBase() {
+    private val configInt = ConcurrentHashMap<Int, Int>()
+    private val configString = ConcurrentHashMap<Int, String>()
 
-    @Override
-    public int setConfig(int item, int value) {
-        configInt.put(item, value);
-        notifyProvisionedValueChanged(item, value);
-        return ImsConfig.OperationStatusConstants.SUCCESS;
+    override fun setConfig(item: Int, value: Int): Int {
+        configInt[item] = value
+        notifyProvisionedValueChanged(item, value)
+        return ImsConfig.OperationStatusConstants.SUCCESS
     }
 
-    @Override
-    public int setConfig(int item, String value) {
-        configString.put(item, value);
-        notifyProvisionedValueChanged(item, value);
-        return ImsConfig.OperationStatusConstants.SUCCESS;
+    override fun setConfig(item: Int, value: String): Int {
+        configString[item] = value
+        notifyProvisionedValueChanged(item, value)
+        return ImsConfig.OperationStatusConstants.SUCCESS
     }
 
-    @Override
-    public int getConfigInt(@NonNull int item) {
-        if (configInt.containsKey(item)) {
-            //noinspection ConstantConditions
-            return configInt.get(item);
+    override fun getConfigInt(@NonNull item: Int): Int {
+        return if (configInt.containsKey(item)) {
+
+            configInt[item]!!
         } else {
-            return ImsConfig.FeatureValueConstants.ERROR;
+            ImsConfig.FeatureValueConstants.ERROR
         }
     }
 
-    @Override
-    public String getConfigString(int item) {
-        if (configString.containsKey(item)) {
-            return configString.get(item);
+    override fun getConfigString(item: Int): String? {
+        return if (configString.containsKey(item)) {
+            configString[item]
         } else {
-            return null;
+            null
         }
     }
 }

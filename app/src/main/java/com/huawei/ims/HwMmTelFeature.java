@@ -28,6 +28,9 @@ import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.util.Log;
 import android.util.SparseArray;
 
+// This file has to remain Java because changeEnabledCapabilities is abstract in MmTelFeature and
+// it exposes a protected subclass of MmTelFeature which Kotlin blocks from compilation.
+
 public class HwMmTelFeature extends MmTelFeature {
 
     private static final HwMmTelFeature[] instances = {null, null, null};
@@ -72,36 +75,37 @@ public class HwMmTelFeature extends MmTelFeature {
 
     private void registerImsInner() {
         try {
-            RilHolder.INSTANCE.getRadio(mSlotId).imsRegister(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
+            RilHolder.INSTANCE.getRadio(mSlotId).imsRegister(RilHolder.INSTANCE.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error != 0) {
                     Log.e(LOG_TAG, "radiorespinfo gives error " + radioResponseInfo.error);
-                    HwImsService.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo(ImsReasonInfo.CODE_UNSPECIFIED, radioResponseInfo.error, radioResponseInfo.toString() + rspMsgPayload.toString()));
+                    HwImsService.Companion.getInstance().getRegistration(mSlotId).onDeregistered(new ImsReasonInfo(ImsReasonInfo.CODE_UNSPECIFIED, radioResponseInfo.error, radioResponseInfo.toString() + rspMsgPayload.toString()));
                 } else {
                     MmTelCapabilities capabilities = new MmTelCapabilities();
                     capabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
                     notifyCapabilitiesStatusChanged(capabilities);
-                    HwImsService.getInstance().getRegistration(mSlotId).notifyRegistered(HwImsRegistration.REGISTRATION_TECH_LTE);
+                    HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyRegistered(HwImsRegistration.REGISTRATION_TECH_LTE);
                 }
+                return null;
             }, mSlotId));
         } catch (RemoteException e) {
-            HwImsService.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
+            HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
             Log.e(LOG_TAG, "error registering ims", e);
         }
     }
 
     public void registerIms() {
-        HwImsService.getInstance().getRegistration(mSlotId).notifyRegistering(HwImsRegistration.REGISTRATION_TECH_LTE);
+        HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyRegistering(HwImsRegistration.REGISTRATION_TECH_LTE);
         try {
-            RilHolder.INSTANCE.getRadio(mSlotId).setImsSwitch(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
+            RilHolder.INSTANCE.getRadio(mSlotId).setImsSwitch(RilHolder.INSTANCE.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error != 0) {
-                    HwImsService.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
+                    HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
                 } else {
                     registerImsInner();
                 }
-
+                return null;
             }, mSlotId), 1);
         } catch (RemoteException e) {
-            HwImsService.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
+            HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
         }
 
 
@@ -109,12 +113,12 @@ public class HwMmTelFeature extends MmTelFeature {
 
     public void unregisterIms() {
         try {
-            RilHolder.INSTANCE.getRadio(mSlotId).setImsSwitch(RilHolder.callback((radioResponseInfo, rspMsgPayload) -> {
+            RilHolder.INSTANCE.getRadio(mSlotId).setImsSwitch(RilHolder.INSTANCE.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error != 0) {
                     // What can we do?
                     Log.e(LOG_TAG, "Failed to unregister imsswitch");
                 }
-
+                return null;
             }, mSlotId), 0);
         } catch (RemoteException e) {
             Log.e(LOG_TAG, "Failed to setImsSwitch to unregister", e);

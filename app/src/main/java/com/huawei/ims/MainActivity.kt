@@ -48,7 +48,7 @@ class MainActivity : Activity() {
 
     fun restartRILD0(view: View) {
         try {
-            RilHolder.INSTANCE.getRadio(0)!!.restartRILD(RilHolder.getNextSerial())
+            RilHolder.getRadio(0)!!.restartRILD(RilHolder.getNextSerial())
         } catch (ignored: NullPointerException) {
         }
 
@@ -56,7 +56,7 @@ class MainActivity : Activity() {
 
     fun restartRILD1(view: View) {
         try {
-            RilHolder.INSTANCE.getRadio(1)!!.restartRILD(RilHolder.getNextSerial())
+            RilHolder.getRadio(1)!!.restartRILD(RilHolder.getNextSerial())
         } catch (ignored: NullPointerException) {
         }
 
@@ -64,7 +64,7 @@ class MainActivity : Activity() {
 
     fun restartRILD2(view: View) {
         try {
-            RilHolder.INSTANCE.getRadio(2)!!.restartRILD(RilHolder.getNextSerial())
+            RilHolder.getRadio(2)!!.restartRILD(RilHolder.getNextSerial())
         } catch (ignored: NullPointerException) {
         }
 
@@ -76,7 +76,7 @@ class MainActivity : Activity() {
         if (view.isEnabled && (view as Switch).isChecked != ims0state) {
             if (ims0state) {
                 // Uncheck
-                HwImsService.getInstance().disableIms(0)
+                HwImsService.instance?.disableIms(0)
             } else {
                 // Check
             }
@@ -91,7 +91,7 @@ class MainActivity : Activity() {
         if (view.isEnabled && (view as Switch).isChecked != ims1state) {
             if (ims1state) {
                 // Uncheck
-                HwImsService.getInstance().disableIms(1)
+                HwImsService.instance?.disableIms(1)
             } else {
                 // Check
             }
