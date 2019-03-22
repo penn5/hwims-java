@@ -93,7 +93,7 @@ public class HwMmTelFeature extends MmTelFeature {
                 return null;
             }, mSlotId));
         } catch (RemoteException e) {
-            HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
+            HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo(), ImsRegistrationImplBase.REGISTRATION_TECH_LTE);
             Log.e(LOG_TAG, "error registering ims", e);
         }
     }
@@ -103,14 +103,14 @@ public class HwMmTelFeature extends MmTelFeature {
         try {
             RilHolder.INSTANCE.getRadio(mSlotId).setImsSwitch(RilHolder.INSTANCE.callback((radioResponseInfo, rspMsgPayload) -> {
                 if (radioResponseInfo.error != 0) {
-                    HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
+                    HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo(), ImsRegistrationImplBase.REGISTRATION_TECH_LTE);
                 } else {
                     registerImsInner();
                 }
                 return null;
             }, mSlotId), 1);
         } catch (RemoteException e) {
-            HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo());
+            HwImsService.Companion.getInstance().getRegistration(mSlotId).notifyDeregistered(new ImsReasonInfo(), ImsRegistrationImplBase.REGISTRATION_TECH_LTE);
         }
 
 

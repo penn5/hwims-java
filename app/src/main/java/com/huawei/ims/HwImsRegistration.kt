@@ -28,15 +28,22 @@ class HwImsRegistration(private val mSlotId: Int) : ImsRegistrationImplBase() {
 
     fun notifyRegistered(@ImsRegistrationTech imsRadioTech: Int) {
         this.onRegistered(imsRadioTech)
-        HwImsService.instance!!.getConfig(mSlotId)!!.setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, ImsConfig.FeatureValueConstants.ON)
+        when (imsRadioTech) {
+            REGISTRATION_TECH_IWLAN -> HwImsService.instance!!.getConfig(mSlotId)!!.setConfig(ImsConfig.ConfigConstants.VOICE_OVER_WIFI_SETTING_ENABLED, ImsConfig.FeatureValueConstants.ON)
+            REGISTRATION_TECH_LTE -> HwImsService.instance!!.getConfig(mSlotId)!!.setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, ImsConfig.FeatureValueConstants.ON)
+
+        }
     }
 
     fun notifyRegistering(@ImsRegistrationTech imsRadioTech: Int) {
         this.onRegistering(imsRadioTech)
     }
 
-    fun notifyDeregistered(info: ImsReasonInfo) {
-        HwImsService.instance!!.getConfig(mSlotId)!!.setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, ImsConfig.FeatureValueConstants.OFF)
+    fun notifyDeregistered(info: ImsReasonInfo, @ImsRegistrationTech imsRadioTech: Int) {
         this.onDeregistered(info)
+        when (imsRadioTech) {
+            REGISTRATION_TECH_IWLAN -> HwImsService.instance!!.getConfig(mSlotId)!!.setConfig(ImsConfig.ConfigConstants.VOICE_OVER_WIFI_SETTING_ENABLED, ImsConfig.FeatureValueConstants.OFF)
+            REGISTRATION_TECH_LTE -> HwImsService.instance!!.getConfig(mSlotId)!!.setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, ImsConfig.FeatureValueConstants.OFF)
+        }
     }
 }

@@ -22,6 +22,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.telephony.ims.ImsReasonInfo
+import android.telephony.ims.stub.ImsRegistrationImplBase
 import android.util.Log
 import com.hisi.mapcon.IMapconService
 
@@ -50,11 +52,13 @@ class MapconController : ServiceConnection {
     fun turnVowifiOn(phoneId: Int) {
         Log.d(tag, "turnVowifiOn($phoneId)")
         service?.setVoWifiOn(phoneId)
+        HwImsService.instance!!.getRegistration(phoneId)?.notifyRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN)
     }
 
     fun turnVowifiOff(phoneId: Int) {
         Log.d(tag, "turnVowifiOff($phoneId)")
         service?.setVoWifiOff(phoneId)
+        HwImsService.instance!!.getRegistration(phoneId)?.notifyDeregistered(ImsReasonInfo(), ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN)
     }
 
     fun setDomain(phoneId: Int, domain: Int) {
