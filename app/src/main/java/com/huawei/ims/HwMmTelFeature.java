@@ -44,7 +44,7 @@ public class HwMmTelFeature extends MmTelFeature {
         mSlotId = slotId;
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_LTE,
                 new MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
-        // One day... :hearteyes:
+        // TODO: check if Mapcon is installed.
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN,
                 new MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
         setFeatureState(STATE_READY);
