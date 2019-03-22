@@ -85,6 +85,7 @@ class HwImsRadioIndication internal constructor(private val mSlotId: Int) : IRad
 
     override fun imsaToVowifiMsg(indicationType: Int, msgs: ArrayList<Byte>) {
         // Huawei
+        Log.e(tag, "NI TO imsaToVowifiMsg $indicationType, $msgs")
     }
 
     override fun vsimOtaSmsReport(indicationType: Int, vsimOtaSms: RILVsimOtaSmsResponse) {
