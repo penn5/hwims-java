@@ -85,6 +85,7 @@ dependencies {
     compileOnly files('libs/telephony-common.jar')
     implementation 'com.android.support:recyclerview-v7:28.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation files('libs/com.hisi.mapcon-java.jar')
 }
 repositories {
     mavenCentral()

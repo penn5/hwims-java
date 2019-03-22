@@ -30,6 +30,7 @@ import android.util.SparseArray;
 
 // This file has to remain Java because changeEnabledCapabilities is abstract in MmTelFeature and
 // it exposes a protected subclass of MmTelFeature which Kotlin blocks from compilation.
+// TODO find a way to refactor to Kt
 
 public class HwMmTelFeature extends MmTelFeature {
 
@@ -42,10 +43,10 @@ public class HwMmTelFeature extends MmTelFeature {
     private HwMmTelFeature(int slotId) { // Use getInstance(slotId)
         mSlotId = slotId;
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_LTE,
-                new MmTelFeature.MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
+                new MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
         // One day... :hearteyes:
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN,
-                new MmTelCapabilities(0));
+                new MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
         setFeatureState(STATE_READY);
     }
 
@@ -67,9 +68,13 @@ public class HwMmTelFeature extends MmTelFeature {
                                           CapabilityCallbackProxy c) {
         for (CapabilityChangeRequest.CapabilityPair pair : request.getCapabilitiesToEnable()) {
             mEnabledCapabilities.get(pair.getRadioTech()).addCapabilities(pair.getCapability());
+            if (pair.getRadioTech() == ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN && pair.getCapability() == MmTelCapabilities.CAPABILITY_TYPE_VOICE)
+                MapconController.Companion.getInstance().turnVowifiOn(mSlotId);
         }
         for (CapabilityChangeRequest.CapabilityPair pair : request.getCapabilitiesToDisable()) {
             mEnabledCapabilities.get(pair.getRadioTech()).removeCapabilities(pair.getCapability());
+            if (pair.getRadioTech() == ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN && pair.getCapability() == MmTelCapabilities.CAPABILITY_TYPE_VOICE)
+                MapconController.Companion.getInstance().turnVowifiOff(mSlotId);
         }
     }
 

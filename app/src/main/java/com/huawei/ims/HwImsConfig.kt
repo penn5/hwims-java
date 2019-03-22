@@ -35,9 +35,7 @@ package com.huawei.ims
 
 import android.annotation.NonNull
 import android.telephony.ims.stub.ImsConfigImplBase
-
 import com.android.ims.ImsConfig
-
 import java.util.concurrent.ConcurrentHashMap
 
 class HwImsConfig : ImsConfigImplBase() {
@@ -46,6 +44,10 @@ class HwImsConfig : ImsConfigImplBase() {
 
     override fun setConfig(item: Int, value: Int): Int {
         configInt[item] = value
+        when (item) {
+            ImsConfig.ConfigConstants.VOICE_OVER_WIFI_ROAMING -> MapconController.getInstance().notifyRoaming(0)
+            ImsConfig.ConfigConstants.VOICE_OVER_WIFI_MODE -> MapconController.getInstance().setDomain(0, value)
+        }
         notifyProvisionedValueChanged(item, value)
         return ImsConfig.OperationStatusConstants.SUCCESS
     }
@@ -58,7 +60,6 @@ class HwImsConfig : ImsConfigImplBase() {
 
     override fun getConfigInt(@NonNull item: Int): Int {
         return if (configInt.containsKey(item)) {
-
             configInt[item]!!
         } else {
             ImsConfig.FeatureValueConstants.ERROR

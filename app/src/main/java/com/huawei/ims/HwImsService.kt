@@ -36,6 +36,7 @@ class HwImsService : ImsService() {
     override fun onCreate() {
         Log.v(LOG_TAG, "HwImsService version " + BuildConfig.GIT_HASH + " created!")
         prefs = createDeviceProtectedStorageContext().getSharedPreferences("config", Context.MODE_PRIVATE)
+        MapconController.getInstance().init(this)
     }
 
     override fun enableIms(slotId: Int) {
