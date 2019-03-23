@@ -23,7 +23,6 @@ import android.telephony.Rlog
 import android.util.Log
 import vendor.huawei.hardware.radio.V1_0.*
 import vendor.huawei.hardware.radio.V1_0.IRadioIndication
-import java.util.*
 
 class HwImsRadioIndication internal constructor(private val mSlotId: Int) : IRadioIndication.Stub() {
 
@@ -34,6 +33,7 @@ class HwImsRadioIndication internal constructor(private val mSlotId: Int) : IRad
         // Huawei
         when (msgId) {
             1079 -> imsCallStateChanged(indicationType)
+            1122 -> imsCallHeldChange(indicationType)
             else -> Log.w(tag, "Unknown indication type!")
         }
     }
@@ -49,6 +49,12 @@ class HwImsRadioIndication internal constructor(private val mSlotId: Int) : IRad
             Rlog.e(tag, "Error getting current calls", e)
         }
 
+    }
+
+    private fun imsCallHeldChange(indicationType: Int) {
+        imsCallStateChanged(indicationType)
+        // We can probably optimise this somehow but I don't know how. CallSession checks the status
+        // If its held, it will send the correct notifications.
     }
 
     override fun apDsFlowInfoReport(indicationType: Int, rapDsFlowInfoReport: RILAPDsFlowInfoReport) {

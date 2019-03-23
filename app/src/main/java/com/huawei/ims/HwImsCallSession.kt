@@ -109,7 +109,7 @@ class HwImsCallSession// For outgoing (MO) calls
                 mState = ImsCallSessionImplBase.State.ESTABLISHED
                 if (listener != null)
                     listener!!.callSessionInitiated(mProfile)
-            } else if (rilImsCall!!.state == 1 && !confInProgress) { // HOLDING
+            } else if (rilImsCall!!.state == 1 /* HOLDING */ && !confInProgress) { // HOLDING
                 if (listener != null)
                     listener!!.callSessionResumed(mProfile)
             } else {
@@ -258,14 +258,12 @@ class HwImsCallSession// For outgoing (MO) calls
             awaitingIdFromRIL[mCallee] = this // Do it sooner rather than later so that this call is not seen as a phantom
             RilHolder.getRadio(mSlotId)!!.imsDial(RilHolder.callback({ radioResponseInfo, _ ->
                 if (radioResponseInfo.error == 0) {
-                    Rlog.e(tag, "MADE AN IMS CALL OMG WOW")
-                    Log.e(tag, "MADE AN IMS CALL OMG WOW")
+                    Rlog.d(tag, "successfully placed call")
                     mInCall = true
                     mState = ImsCallSessionImplBase.State.ESTABLISHED
                     listener!!.callSessionInitiated(profile)
                 } else {
-                    Rlog.e(tag, "Failed to make ims call :(")
-                    Log.e(tag, "failed to make ims call :(")
+                    Rlog.e(tag, "call failed")
                     mState = ImsCallSessionImplBase.State.TERMINATED
                     awaitingIdFromRIL.remove(callee, this)
                     listener!!.callSessionInitiatedFailed(ImsReasonInfo())
@@ -324,7 +322,7 @@ class HwImsCallSession// For outgoing (MO) calls
             Rlog.e(tag, "Error listing ims calls!");
         }
         */
-        // The above doesn't work. So, we do it the huawei way, which is to hangup the call.
+        // The above doesn't work. So, we do it the huawei way, which is to hangup the call. Reeee.
         mState = ImsCallSessionImplBase.State.TERMINATING
         try {
             getRilCallId()
