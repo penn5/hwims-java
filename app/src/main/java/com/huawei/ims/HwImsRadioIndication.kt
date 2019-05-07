@@ -76,6 +76,7 @@ class HwImsRadioIndication internal constructor(private val mSlotId: Int) : IRad
 
     override fun imsCallMtStatusInd(type: Int, imsCallMtStatus: RILImsMtStatusReport) {
         // TODO: MT status indications - Missed incoming call notifications
+        Log.d(tag, "Received MT status indication: {type}/{imsCallMtStatus}")
         // Huawei
     }
 
