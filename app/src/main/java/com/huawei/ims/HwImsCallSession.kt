@@ -35,8 +35,8 @@ import vendor.huawei.hardware.radio.V1_0.RILImsCallType
 import vendor.huawei.hardware.radio.V1_0.RILImsDial
 import java.util.concurrent.ConcurrentHashMap
 
-class HwImsCallSession// For outgoing (MO) calls
-(private val mSlotId: Int, profile: ImsCallProfile) : ImsCallSessionImplBase() {
+class HwImsCallSession
+/* For outgoing (MO) calls */ (private val mSlotId: Int, profile: ImsCallProfile) : ImsCallSessionImplBase() {
     private val mProfile: ImsCallProfile
     private val mLocalProfile: ImsCallProfile
     private val mRemoteProfile: ImsCallProfile
@@ -142,7 +142,7 @@ class HwImsCallSession// For outgoing (MO) calls
             }
         }
 
-        mProfile.setCallExtra(EXTRA_OI, call.number)
+        mProfile.setCallExtra(EXTRA_OI, (if (call.isMT > 0) "" else "+") + call.number)
         mProfile.setCallExtraInt(EXTRA_OIR, hwOirToOir(call.numberPresentation))
         mProfile.setCallExtra(EXTRA_CNA, if (call.name.isEmpty()) call.number else call.name)
         mProfile.setCallExtraInt(EXTRA_CNAP, hwOirToOir(call.namePresentation))
