@@ -142,7 +142,7 @@ class HwImsCallSession
             }
         }
 
-        mProfile.setCallExtra(EXTRA_OI, (if (call.isMT > 0) "" else "+") + call.number)
+        mProfile.setCallExtra(EXTRA_OI, (if (call.isMT == 0) "" else "+") + call.number)
         mProfile.setCallExtraInt(EXTRA_OIR, hwOirToOir(call.numberPresentation))
         mProfile.setCallExtra(EXTRA_CNA, if (call.name.isEmpty()) call.number else call.name)
         mProfile.setCallExtraInt(EXTRA_CNAP, hwOirToOir(call.namePresentation))
