@@ -19,6 +19,7 @@ package com.huawei.ims;
 
 import android.annotation.NonNull;
 import android.os.RemoteException;
+import android.telephony.Rlog;
 import android.telephony.ims.ImsCallProfile;
 import android.telephony.ims.ImsReasonInfo;
 import android.telephony.ims.feature.CapabilityChangeRequest;
@@ -76,6 +77,17 @@ public class HwMmTelFeature extends MmTelFeature {
             if (pair.getRadioTech() == ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN && pair.getCapability() == MmTelCapabilities.CAPABILITY_TYPE_VOICE)
                 MapconController.Companion.getInstance().turnVowifiOff(mSlotId);
         }
+    }
+
+    int getImsSwitch() {
+        int serial = RilHolder.INSTANCE.prepareBlock(mSlotId);
+        try {
+            RilHolder.INSTANCE.getRadio(mSlotId).getImsSwitch(serial);
+            RilHolder.INSTANCE.blockUntilComplete(serial);
+        } catch (RemoteException e) {
+            Rlog.e(LOG_TAG, "Failed to getImsSwitch!", e);
+        }
+        return 1;
     }
 
     private void registerImsInner() {
@@ -155,7 +167,8 @@ public class HwMmTelFeature extends MmTelFeature {
 
     @Override
     public void onFeatureReady() {
-        registerIms();
+        super.onFeatureReady();
+        getImsSwitch();
     }
 
 }

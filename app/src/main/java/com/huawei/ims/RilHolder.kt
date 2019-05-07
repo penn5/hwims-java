@@ -29,7 +29,6 @@ import vendor.huawei.hardware.radio.V1_0.IRadio
 import vendor.huawei.hardware.radio.V1_0.RspMsgPayload
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.locks.ReentrantLock
 
 object RilHolder {
 
@@ -85,26 +84,21 @@ object RilHolder {
     }
 
     class BlockingCallback {
-        private val lock = ReentrantLock()
+        private val lock = Object()
         private var done = false
         private var radioResponseInfo: RadioResponseInfo? = null
-
-        init {
-            lock.lock()
-        }
 
         fun run(radioResponseInfo: RadioResponseInfo, rspMsgPayload: RspMsgPayload?) {
             if (done)
                 throw RuntimeException("May not call the callback twice for the same serial!")
             this.radioResponseInfo = radioResponseInfo
-            lock.unlock()
             done = true
+            lock.notifyAll()
         }
 
         fun get(): RadioResponseInfo {
-            if (!done) {
-                lock.lock()
-                lock.unlock()
+            while (!done) {
+                lock.wait()
             }
             return radioResponseInfo!!
             // The lock ensures it's never null. An NPE here means something went really wrong.

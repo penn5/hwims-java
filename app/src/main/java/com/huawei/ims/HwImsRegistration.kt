@@ -20,19 +20,12 @@ package com.huawei.ims
 import android.telephony.ims.ImsReasonInfo
 import android.telephony.ims.stub.ImsRegistrationImplBase
 
-import com.android.ims.ImsConfig
-
 class HwImsRegistration(private val mSlotId: Int) : ImsRegistrationImplBase() {
 
     // BEWARE FUTURE ME: https://android-review.googlesource.com/c/platform/frameworks/base/+/809459 is changing this big-time in AOSP Q
 
     fun notifyRegistered(@ImsRegistrationTech imsRadioTech: Int) {
         this.onRegistered(imsRadioTech)
-        when (imsRadioTech) {
-            REGISTRATION_TECH_IWLAN -> HwImsService.instance!!.getConfig(mSlotId)!!.setConfig(ImsConfig.ConfigConstants.VOICE_OVER_WIFI_SETTING_ENABLED, ImsConfig.FeatureValueConstants.ON)
-            REGISTRATION_TECH_LTE -> HwImsService.instance!!.getConfig(mSlotId)!!.setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, ImsConfig.FeatureValueConstants.ON)
-
-        }
     }
 
     fun notifyRegistering(@ImsRegistrationTech imsRadioTech: Int) {
@@ -41,9 +34,5 @@ class HwImsRegistration(private val mSlotId: Int) : ImsRegistrationImplBase() {
 
     fun notifyDeregistered(info: ImsReasonInfo, @ImsRegistrationTech imsRadioTech: Int) {
         this.onDeregistered(info)
-        when (imsRadioTech) {
-            REGISTRATION_TECH_IWLAN -> HwImsService.instance!!.getConfig(mSlotId)!!.setConfig(ImsConfig.ConfigConstants.VOICE_OVER_WIFI_SETTING_ENABLED, ImsConfig.FeatureValueConstants.OFF)
-            REGISTRATION_TECH_LTE -> HwImsService.instance!!.getConfig(mSlotId)!!.setConfig(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED, ImsConfig.FeatureValueConstants.OFF)
-        }
     }
 }

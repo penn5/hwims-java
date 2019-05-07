@@ -25,10 +25,9 @@ import android.telephony.ims.ImsCallProfile.*
 import android.telephony.ims.ImsCallSessionListener
 import android.telephony.ims.ImsReasonInfo
 import android.telephony.ims.ImsStreamMediaProfile
-import android.telephony.ims.feature.MmTelFeature
 import android.telephony.ims.stub.ImsCallSessionImplBase
-import android.telephony.ims.stub.ImsRegistrationImplBase
 import android.util.Log
+import com.android.ims.ImsConfig
 import vendor.huawei.hardware.radio.V1_0.RILImsCall
 import vendor.huawei.hardware.radio.V1_0.RILImsCallDomain
 import vendor.huawei.hardware.radio.V1_0.RILImsCallType
@@ -147,6 +146,15 @@ class HwImsCallSession
         mProfile.setCallExtra(EXTRA_CNA, if (call.name.isEmpty()) call.number else call.name)
         mProfile.setCallExtraInt(EXTRA_CNAP, hwOirToOir(call.namePresentation))
 
+        if (rilImsCall?.callDetails?.callDomain != call.callDetails.callDomain)
+        //TODO
+            Log.w(tag, "NI change domain notify to aosp")
+
+        if (rilImsCall?.callDetails?.callType != call.callDetails.callType)
+        //TODO
+            Log.w(tag, "NI change tech notify to aosp")
+
+
         if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && call != rilImsCall && listener != null) {
             listener!!.callSessionUpdated(mProfile)
         }
@@ -247,7 +255,7 @@ class HwImsCallSession
         }
 
         callInfo.callDetails.callType = callType
-        if (HwImsService.instance!!.createMmTelFeature(mSlotId)!!.queryCapabilityConfiguration(ImsRegistrationImplBase.REGISTRATION_TECH_LTE, MmTelFeature.MmTelCapabilities.CAPABILITY_TYPE_VOICE)) {
+        if (HwImsService.instance!!.getConfig(mSlotId)!!.getConfigInt(ImsConfig.ConfigConstants.VLT_SETTING_ENABLED) == ImsConfig.FeatureValueConstants.ON) {
             callInfo.callDetails.callDomain = RILImsCallDomain.CALL_DOMAIN_AUTOMATIC
         } else {
             callInfo.callDetails.callDomain = RILImsCallDomain.CALL_DOMAIN_CS

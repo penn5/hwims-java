@@ -70,7 +70,11 @@ class HwImsRadioIndication internal constructor(private val mSlotId: Int) : IRad
     }
 
     override fun imsCallModifyInd(type: Int, modify: RILImsCallModify) {
-        // TODO?
+        try {
+            RilHolder.getRadio(mSlotId)!!.getCurrentImsCalls(RilHolder.getNextSerial())
+        } catch (e: RemoteException) {
+            Rlog.e(tag, "Error getting current calls for handover", e)
+        }
         // Huawei
     }
 

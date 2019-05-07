@@ -42,6 +42,11 @@ class HwImsConfig : ImsConfigImplBase() {
     private val configInt = ConcurrentHashMap<Int, Int>()
     private val configString = ConcurrentHashMap<Int, String>()
 
+    init {
+        // We support VoLTE by default.
+        configInt[ImsConfig.ConfigConstants.VLT_SETTING_ENABLED] = ImsConfig.FeatureValueConstants.ON
+    }
+
     override fun setConfig(item: Int, value: Int): Int {
         configInt[item] = value
         when (item) {
@@ -59,18 +64,11 @@ class HwImsConfig : ImsConfigImplBase() {
     }
 
     override fun getConfigInt(@NonNull item: Int): Int {
-        return if (configInt.containsKey(item)) {
-            configInt[item]!!
-        } else {
-            ImsConfig.FeatureValueConstants.ERROR
-        }
+        return configInt.getOrDefault(item, null) ?: ImsConfig.FeatureValueConstants.ERROR
+
     }
 
     override fun getConfigString(item: Int): String? {
-        return if (configString.containsKey(item)) {
-            configString[item]
-        } else {
-            null
-        }
+        return configString.getOrDefault(item, null)
     }
 }
