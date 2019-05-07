@@ -70,10 +70,12 @@ class HwImsRadioIndication internal constructor(private val mSlotId: Int) : IRad
     }
 
     override fun imsCallModifyInd(type: Int, modify: RILImsCallModify) {
+        // TODO?
         // Huawei
     }
 
     override fun imsCallMtStatusInd(type: Int, imsCallMtStatus: RILImsMtStatusReport) {
+        // TODO: MT status indications - Missed incoming call notifications
         // Huawei
     }
 
@@ -91,7 +93,6 @@ class HwImsRadioIndication internal constructor(private val mSlotId: Int) : IRad
 
     override fun imsaToVowifiMsg(indicationType: Int, msgs: ArrayList<Byte>) {
         // Huawei
-        Log.e(tag, "NI TO imsaToVowifiMsg $indicationType, $msgs")
     }
 
     override fun vsimOtaSmsReport(indicationType: Int, vsimOtaSms: RILVsimOtaSmsResponse) {
