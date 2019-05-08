@@ -20,6 +20,7 @@ package com.huawei.ims;
 import android.annotation.NonNull;
 import android.os.RemoteException;
 import android.telephony.Rlog;
+import android.telephony.TelephonyManager;
 import android.telephony.ims.ImsCallProfile;
 import android.telephony.ims.ImsReasonInfo;
 import android.telephony.ims.feature.CapabilityChangeRequest;
@@ -40,9 +41,15 @@ public class HwMmTelFeature extends MmTelFeature {
     // Enabled Capabilities - not status
     private final SparseArray<MmTelCapabilities> mEnabledCapabilities = new SparseArray<>();
     private final int mSlotId;
+    public TelephonyManager telephonyManager;
 
     private HwMmTelFeature(int slotId) { // Use getInstance(slotId)
         mSlotId = slotId;
+
+        telephonyManager = HwImsService.Companion.getInstance().telephonyManager.createForSubscriptionId(
+            HwImsService.Companion.getInstance().subscriptionManager
+            .getActiveSubscriptionInfoForSimSlotIndex(slotId).getSubscriptionId());
+
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_LTE,
                 new MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
         // TODO: check if Mapcon is installed.

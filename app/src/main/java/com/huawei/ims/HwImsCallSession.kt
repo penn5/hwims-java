@@ -20,6 +20,7 @@ package com.huawei.ims
 import android.os.Message
 import android.os.RemoteException
 import android.telephony.Rlog
+import android.telephony.PhoneNumberUtils
 import android.telephony.ims.ImsCallProfile
 import android.telephony.ims.ImsCallProfile.*
 import android.telephony.ims.ImsCallSessionListener
@@ -141,7 +142,13 @@ class HwImsCallSession
             }
         }
 
-        mProfile.setCallExtra(EXTRA_OI, (if (call.isMT > 0) "+" else "") + call.number)
+        // We have to do lots of complicated formatting stuff here because RIL returns different formats depending on the MCC-MNC
+        mProfile.setCallExtra(EXTRA_OI, PhoneNumberUtils.formatNumber(
+            call.number,
+            HwImsService.instance!!.createMmTelFeature(mSlotId)!!.telephonyManager.getNetworkCountryIso()))
+
+        Log.d(tag, "Using OI ${mProfile.getCallExtra(EXTRA_OI)}!")
+
         mProfile.setCallExtraInt(EXTRA_OIR, hwOirToOir(call.numberPresentation))
         mProfile.setCallExtra(EXTRA_CNA, if (call.name.isEmpty()) call.number else call.name)
         mProfile.setCallExtraInt(EXTRA_CNAP, hwOirToOir(call.namePresentation))

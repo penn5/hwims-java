@@ -20,6 +20,7 @@ package com.huawei.ims
 import android.content.Context
 import android.content.SharedPreferences
 import android.telephony.TelephonyManager
+import android.telephony.SubscriptionManager
 import android.telephony.ims.ImsService
 import android.telephony.ims.feature.ImsFeature
 import android.telephony.ims.feature.MmTelFeature
@@ -32,9 +33,13 @@ class HwImsService : ImsService() {
     private val registrations = arrayOfNulls<HwImsRegistration>(3)
     private val configs = arrayOfNulls<HwImsConfig>(3)
     private var prefs: SharedPreferences? = null
+    lateinit internal var subscriptionManager: SubscriptionManager
+    lateinit internal var telephonyManager: TelephonyManager
 
     override fun onCreate() {
         Log.v(LOG_TAG, "HwImsService version " + BuildConfig.GIT_HASH + " created!")
+        subscriptionManager = getSystemService(SubscriptionManager::class.java)
+        telephonyManager = getSystemService(TelephonyManager::class.java)
         prefs = createDeviceProtectedStorageContext().getSharedPreferences("config", Context.MODE_PRIVATE)
         MapconController.getInstance().init(this)
     }
@@ -65,7 +70,7 @@ class HwImsService : ImsService() {
         return builder.build()
     }
 
-    override fun createMmTelFeature(slotId: Int): MmTelFeature? {
+    override fun createMmTelFeature(slotId: Int): HwMmTelFeature? {
         if (slotId > 0 && !supportsDualIms(this)) {
             return null
         }
