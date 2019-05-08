@@ -89,16 +89,20 @@ object RilHolder {
         private var radioResponseInfo: RadioResponseInfo? = null
 
         fun run(radioResponseInfo: RadioResponseInfo, rspMsgPayload: RspMsgPayload?) {
-            if (done)
-                throw RuntimeException("May not call the callback twice for the same serial!")
-            this.radioResponseInfo = radioResponseInfo
-            done = true
-            lock.notifyAll()
+            synchronized(lock) {
+                if (done)
+                    throw RuntimeException("May not call the callback twice for the same serial!")
+                this.radioResponseInfo = radioResponseInfo
+                done = true
+                lock.notifyAll()
+            }
         }
 
         fun get(): RadioResponseInfo {
-            while (!done) {
-                lock.wait()
+            synchronized(lock) {
+                while (!done) {
+                    lock.wait()
+                }
             }
             return radioResponseInfo!!
             // The lock ensures it's never null. An NPE here means something went really wrong.
