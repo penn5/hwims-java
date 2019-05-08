@@ -76,6 +76,7 @@ object RilHolder {
         }
         try {
             radioImpls[slotId]!!.setResponseFunctionsHuawei(responseCallbacks[slotId], unsolCallbacks[slotId])
+            radioImpls[slotId]!!.setResponseFunctions(responseCallbacks[slotId], unsolCallbacks[slotId])
         } catch (e: RemoteException) {
             Log.e(LOG_TAG, "Failed to update resp functions!")
         }
@@ -123,7 +124,7 @@ object RilHolder {
         return ++nextSerial
     }
 
-    fun triggerCB(serial: Int, @NonNull radioResponseInfo: RadioResponseInfo, @Nullable rspMsgPayload: RspMsgPayload) {
+    fun triggerCB(serial: Int, radioResponseInfo: RadioResponseInfo, rspMsgPayload: RspMsgPayload?) {
         Log.e(LOG_TAG, "Incoming response for slot " + serialToSlot[serial] + ", serial " + serial + ", radioResponseInfo " + radioResponseInfo + ", rspMsgPayload " + rspMsgPayload)
         if (callbacks.containsKey(serial))
             callbacks[serial]!!(radioResponseInfo, rspMsgPayload)

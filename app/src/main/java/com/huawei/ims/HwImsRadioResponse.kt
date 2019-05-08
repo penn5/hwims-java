@@ -52,7 +52,7 @@ class HwImsRadioResponse internal constructor(private val mSlotId: Int) : IRadio
 
         }*/
         // Huawei
-        RilHolder.triggerCB(radioResponseInfo.serial, radioResponseInfo, rspMsgPayload!!)
+        RilHolder.triggerCB(radioResponseInfo.serial, radioResponseInfo, rspMsgPayload)
     }
     /*
     public static final int IMS_DIAL_RESPONSE = 0XDC;
