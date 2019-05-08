@@ -142,12 +142,18 @@ class HwImsCallSession
             }
         }
 
+        val subId = HwImsService.instance!!.subscriptionManager
+            .getActiveSubscriptionInfoForSimSlotIndex(mSlotId).getSubscriptionId()
+
+        val telephonyManager = HwImsService.instance!!.telephonyManager.createForSubscriptionId(subId)
+
         // We have to do lots of complicated formatting stuff here because RIL returns different formats depending on the MCC-MNC
+        Log.d(tag, "CC ${telephonyManager.getNetworkCountryIso().toUpperCase()}")
         mProfile.setCallExtra(EXTRA_OI, PhoneNumberUtils.formatNumber(
             call.number,
-            HwImsService.instance!!.createMmTelFeature(mSlotId)!!.telephonyManager.getNetworkCountryIso()))
+            (telephonyManager.getNetworkCountryIso() ?: telephonyManager.getSimCountryIso()).toUpperCase()))
 
-        Log.d(tag, "Using OI ${mProfile.getCallExtra(EXTRA_OI)}!")
+        Log.d(tag, "Using OI ${Rlog.pii(tag, mProfile.getCallExtra(EXTRA_OI))} for profile")
 
         mProfile.setCallExtraInt(EXTRA_OIR, hwOirToOir(call.numberPresentation))
         mProfile.setCallExtra(EXTRA_CNA, if (call.name.isEmpty()) call.number else call.name)

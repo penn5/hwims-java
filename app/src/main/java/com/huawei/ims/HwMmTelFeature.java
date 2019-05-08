@@ -45,11 +45,6 @@ public class HwMmTelFeature extends MmTelFeature {
 
     private HwMmTelFeature(int slotId) { // Use getInstance(slotId)
         mSlotId = slotId;
-
-        telephonyManager = HwImsService.Companion.getInstance().telephonyManager.createForSubscriptionId(
-            HwImsService.Companion.getInstance().subscriptionManager
-            .getActiveSubscriptionInfoForSimSlotIndex(slotId) /* TODO: High risk of NPE */ .getSubscriptionId());
-
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_LTE,
                 new MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
         // TODO: check if Mapcon is installed.
