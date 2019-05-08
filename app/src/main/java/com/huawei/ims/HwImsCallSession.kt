@@ -223,7 +223,7 @@ class HwImsCallSession
     }
 
     override fun setMute(muted: Boolean) {
-        try {
+/*        try {
             val serial = RilHolder.prepareBlock(mSlotId)
             RilHolder.getRadio(mSlotId)!!.setMute(serial, muted)
             if (RilHolder.blockUntilComplete(serial).error != 0) {
@@ -232,7 +232,7 @@ class HwImsCallSession
         } catch (e: RemoteException) {
             Rlog.e(tag, "Error sending setMute request!", e)
         }
-
+*/
     }
 
     private fun convertAospCallType(callType: Int): Int {
