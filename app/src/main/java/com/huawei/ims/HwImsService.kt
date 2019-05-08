@@ -44,6 +44,11 @@ class HwImsService : ImsService() {
         MapconController.getInstance().init(this)
     }
 
+    override fun onDestroy() {
+        Log.v(LOG_TAG, "Shutting down HwImsService...")
+        instance = null
+    }
+
     override fun enableIms(slotId: Int) {
         (createMmTelFeature(slotId) as HwMmTelFeature).registerIms()
     }
