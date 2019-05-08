@@ -149,7 +149,7 @@ class HwImsCallSession
 
         // We have to do lots of complicated formatting stuff here because RIL returns different formats depending on the MCC-MNC
         Log.d(tag, "CC ${telephonyManager.getNetworkCountryIso().toUpperCase()}")
-        mProfile.setCallExtra(EXTRA_OI, PhoneNumberUtils.formatNumber(
+        mProfile.setCallExtra(EXTRA_OI, PhoneNumberUtils.formatNumberToE164(
             call.number,
             (telephonyManager.getNetworkCountryIso() ?: telephonyManager.getSimCountryIso()).toUpperCase()))
 
