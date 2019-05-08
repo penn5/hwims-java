@@ -48,7 +48,7 @@ public class HwMmTelFeature extends MmTelFeature {
 
         telephonyManager = HwImsService.Companion.getInstance().telephonyManager.createForSubscriptionId(
             HwImsService.Companion.getInstance().subscriptionManager
-            .getActiveSubscriptionInfoForSimSlotIndex(slotId).getSubscriptionId());
+            .getActiveSubscriptionInfoForSimSlotIndex(slotId) /* TODO: High risk of NPE */ .getSubscriptionId());
 
         mEnabledCapabilities.append(ImsRegistrationImplBase.REGISTRATION_TECH_LTE,
                 new MmTelCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE));
