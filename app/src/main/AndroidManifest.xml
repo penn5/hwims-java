@@ -22,7 +22,7 @@
     package="com.huawei.ims"
     android:sharedUserId="android.uid.phone">
 
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:allowBackup="false"
