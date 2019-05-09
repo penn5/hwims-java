@@ -156,8 +156,8 @@ class HwImsCallSession
         Log.d(tag, "Using OI ${Rlog.pii(tag, mProfile.getCallExtra(EXTRA_OI))} for profile")
 
         mProfile.setCallExtraInt(EXTRA_OIR, hwOirToOir(call.numberPresentation))
-        //mProfile.setCallExtra(EXTRA_CNA, if (call.name.isEmpty()) call.number else call.name)
-        //mProfile.setCallExtraInt(EXTRA_CNAP, hwOirToOir(call.namePresentation))
+        mProfile.setCallExtra(EXTRA_CNA, if (call.name.isEmpty()) mProfile.getCallExtra(EXTRA_OI) else call.name)
+        mProfile.setCallExtraInt(EXTRA_CNAP, hwOirToOir(call.namePresentation))
 
         if (rilImsCall?.callDetails?.callDomain != call.callDetails.callDomain)
         //TODO
