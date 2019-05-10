@@ -19,11 +19,10 @@ package com.huawei.ims
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.telephony.TelephonyManager
 import android.telephony.SubscriptionManager
+import android.telephony.TelephonyManager
 import android.telephony.ims.ImsService
 import android.telephony.ims.feature.ImsFeature
-import android.telephony.ims.feature.MmTelFeature
 import android.telephony.ims.stub.ImsConfigImplBase
 import android.telephony.ims.stub.ImsFeatureConfiguration
 import android.util.Log
@@ -33,8 +32,8 @@ class HwImsService : ImsService() {
     private val registrations = arrayOfNulls<HwImsRegistration>(3)
     private val configs = arrayOfNulls<HwImsConfig>(3)
     private var prefs: SharedPreferences? = null
-    lateinit internal var subscriptionManager: SubscriptionManager
-    lateinit internal var telephonyManager: TelephonyManager
+    internal lateinit var subscriptionManager: SubscriptionManager
+    internal lateinit var telephonyManager: TelephonyManager
 
     override fun onCreate() {
         Log.v(LOG_TAG, "HwImsService version " + BuildConfig.GIT_HASH + " created!")
@@ -81,7 +80,6 @@ class HwImsService : ImsService() {
         }
         if (mmTelFeatures[slotId] == null) {
             mmTelFeatures[slotId] = HwMmTelFeature.getInstance(slotId)
-            registrations[slotId] = HwImsRegistration(slotId)
         }
         return mmTelFeatures[slotId]
     }
