@@ -98,7 +98,7 @@ class HwImsRadioResponse internal constructor(private val mSlotId: Int) : IRadio
             val calls = ArrayList<Int>(arrayList.size)
             for (call in arrayList) {
                 Log.d(tag, "calls list contains " + redactCall(call))
-                // RIL never gives us the leading +, so first try with one, and if its null, try again without the +.
+                // RIL sometimes gives us the leading +, so first try with one, and if its null, try again without the +.
                 var session = HwImsCallSession.awaitingIdFromRIL["+" + call.number]
                 if (session == null)
                     session = HwImsCallSession.awaitingIdFromRIL[call.number]
@@ -406,11 +406,11 @@ class HwImsRadioResponse internal constructor(private val mSlotId: Int) : IRadio
     }
 
     override fun hangupForegroundResumeBackgroundResponse(radioResponseInfo: RadioResponseInfo) {
-
+        RspMsg(radioResponseInfo, -1, null)
     }
 
     override fun hangupWaitingOrBackgroundResponse(radioResponseInfo: RadioResponseInfo) {
-
+        RspMsg(radioResponseInfo, -1, null)
     }
 
     override fun iccCloseLogicalChannelResponse(radioResponseInfo: RadioResponseInfo) {

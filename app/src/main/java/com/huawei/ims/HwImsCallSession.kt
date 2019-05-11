@@ -143,7 +143,7 @@ class HwImsCallSession
         }
 
         val subId = HwImsService.instance!!.subscriptionManager
-            .getActiveSubscriptionInfoForSimSlotIndex(mSlotId).getSubscriptionId()
+                .getActiveSubscriptionInfoForSimSlotIndex(mSlotId).subscriptionId
 
         val telephonyManager = HwImsService.instance!!.telephonyManager.createForSubscriptionId(subId)
 
