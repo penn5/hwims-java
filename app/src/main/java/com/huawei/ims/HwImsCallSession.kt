@@ -17,6 +17,7 @@
 
 package com.huawei.ims
 
+import android.annotation.SuppressLint
 import android.os.Message
 import android.os.RemoteException
 import android.telephony.Rlog
@@ -91,6 +92,7 @@ class HwImsCallSession
         }
     }
 
+    @SuppressLint("MissingPermission")
     fun updateCall(call: RILImsCall) {
         val lastState = mState
         when (call.state) {
@@ -150,7 +152,7 @@ class HwImsCallSession
         // We have to do lots of complicated formatting stuff here because RIL returns different formats depending on the MCC-MNC
         Log.d(tag, "CC ${telephonyManager.networkCountryIso.toUpperCase()}")
         mProfile.setCallExtra(EXTRA_OI, PhoneNumberUtils.formatNumberToE164(
-            call.number,
+                call.number,
                 (telephonyManager.networkCountryIso
                         ?: telephonyManager.simCountryIso).toUpperCase()))
 
