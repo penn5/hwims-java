@@ -20,8 +20,8 @@ package com.huawei.ims
 import android.annotation.SuppressLint
 import android.os.Message
 import android.os.RemoteException
-import android.telephony.Rlog
 import android.telephony.PhoneNumberUtils
+import android.telephony.Rlog
 import android.telephony.ims.ImsCallProfile
 import android.telephony.ims.ImsCallProfile.*
 import android.telephony.ims.ImsCallSessionListener
@@ -46,7 +46,7 @@ class HwImsCallSession
     var rilImsCall: RILImsCall? = null
     private var mInCall = false
 
-    private val mCallIdLock = java.lang.Object()
+    private val mCallIdLock = Object()
     private var confInProgress = false
     private var mState: Int = 0
 
@@ -58,7 +58,7 @@ class HwImsCallSession
         this.mProfile = ImsCallProfile(SERVICE_TYPE_NORMAL, profile.callType)
         this.mLocalProfile = ImsCallProfile(SERVICE_TYPE_NORMAL, profile.callType)
         this.mRemoteProfile = ImsCallProfile(SERVICE_TYPE_NORMAL, profile.callType)
-        this.mState = ImsCallSessionImplBase.State.IDLE
+        this.mState = State.IDLE
     }
 
     // For incoming (MT) calls
@@ -84,11 +84,11 @@ class HwImsCallSession
 
     private fun hwOirToOir(oir: Int): Int {
         return when (oir) {
-            OIR_BEHAVIOUR_TYPE_DEFAULT -> ImsCallProfile.OIR_PRESENTATION_NOT_RESTRICTED
-            OIR_BEHAVIOUR_TYPE_NOT_RESTRICTED -> ImsCallProfile.OIR_PRESENTATION_NOT_RESTRICTED
-            OIR_BEHAVIOUR_TYPE_NOT_SUBSCRIBED -> ImsCallProfile.OIR_PRESENTATION_PAYPHONE
-            OIR_BEHAVIOUR_TYPE_RESTRICTED -> ImsCallProfile.OIR_PRESENTATION_RESTRICTED
-            else -> ImsCallProfile.OIR_PRESENTATION_UNKNOWN
+            OIR_BEHAVIOUR_TYPE_DEFAULT -> OIR_PRESENTATION_NOT_RESTRICTED
+            OIR_BEHAVIOUR_TYPE_NOT_RESTRICTED -> OIR_PRESENTATION_NOT_RESTRICTED
+            OIR_BEHAVIOUR_TYPE_NOT_SUBSCRIBED -> OIR_PRESENTATION_PAYPHONE
+            OIR_BEHAVIOUR_TYPE_RESTRICTED -> OIR_PRESENTATION_RESTRICTED
+            else -> OIR_PRESENTATION_UNKNOWN
         }
     }
 
@@ -98,7 +98,7 @@ class HwImsCallSession
         when (call.state) {
             0 // ACTIVE
             -> if (rilImsCall == null) {
-                mState = ImsCallSessionImplBase.State.ESTABLISHED
+                mState = State.ESTABLISHED
                 if (listener != null)
                     listener!!.callSessionInitiated(mProfile)
             } else if (rilImsCall!!.state == 2 || // DIALING
@@ -108,7 +108,7 @@ class HwImsCallSession
                     rilImsCall!!.state == 4 || // INCOMING
 
                     rilImsCall!!.state == 5) { // WAITING
-                mState = ImsCallSessionImplBase.State.ESTABLISHED
+                mState = State.ESTABLISHED
                 if (listener != null)
                     listener!!.callSessionInitiated(mProfile)
             } else if (rilImsCall!!.state == 1 /* HOLDING */ && !confInProgress) { // HOLDING
@@ -125,7 +125,7 @@ class HwImsCallSession
                 listener!!.callSessionProgressing(ImsStreamMediaProfile())
             3 // ALERTING
             -> {
-                mState = ImsCallSessionImplBase.State.NEGOTIATING
+                mState = State.NEGOTIATING
                 if (rilImsCall == null) {
                     Rlog.e(tag, "Alerting an incoming call wtf?")
                 }
@@ -138,7 +138,7 @@ class HwImsCallSession
             }
             6 // END
             -> {
-                mState = ImsCallSessionImplBase.State.TERMINATED
+                mState = State.TERMINATED
                 if (listener != null)
                     die(ImsReasonInfo())
             }
@@ -181,7 +181,7 @@ class HwImsCallSession
         if (rilImsCall != null)
             calls.remove(rilImsCall!!.index)
         awaitingIdFromRIL.remove(mCallee)
-        mState = ImsCallSessionImplBase.State.TERMINATED
+        mState = State.TERMINATED
         if (listener != null) {
             listener!!.callSessionTerminated(reason)
         }
@@ -284,11 +284,11 @@ class HwImsCallSession
                 if (radioResponseInfo.error == 0) {
                     Rlog.d(tag, "successfully placed call")
                     mInCall = true
-                    mState = ImsCallSessionImplBase.State.ESTABLISHED
+                    mState = State.ESTABLISHED
                     listener!!.callSessionInitiated(profile)
                 } else {
                     Rlog.e(tag, "call failed")
-                    mState = ImsCallSessionImplBase.State.TERMINATED
+                    mState = State.TERMINATED
                     awaitingIdFromRIL.remove(callee, this)
                     listener!!.callSessionInitiatedFailed(ImsReasonInfo())
                 }
@@ -308,7 +308,7 @@ class HwImsCallSession
     }
 
     override fun accept(callType: Int, profile: ImsStreamMediaProfile?) {
-        mState = ImsCallSessionImplBase.State.ESTABLISHING
+        mState = State.ESTABLISHING
         try {
             RilHolder.getRadio(mSlotId)!!.acceptImsCall(RilHolder.callback({ radioResponseInfo, _ ->
                 if (radioResponseInfo.error != 0) {
@@ -347,22 +347,22 @@ class HwImsCallSession
         }
         */
         // The above doesn't work. So, we do it the huawei way, which is to hangup the call. Reeee.
-        mState = ImsCallSessionImplBase.State.TERMINATING
+        mState = State.TERMINATING
         try {
             getRilCallId()
             RilHolder.getRadio(mSlotId)!!.hangup(RilHolder.callback({ radioResponseInfo, _ ->
                 Rlog.d(tag, "got cb for hangup!")
                 if (radioResponseInfo.error != 0) {
-                    mState = ImsCallSessionImplBase.State.INVALID
+                    mState = State.INVALID
                     Rlog.e(tag, "Error hanging up!")
                 } else {
-                    mState = ImsCallSessionImplBase.State.TERMINATED
+                    mState = State.TERMINATED
                     die(ImsReasonInfo())
 
                 }
             }, mSlotId), rilImsCall!!.index)
             // TODO FIXME: Radio doesn't reply to hangup() so we assume it worked.
-            mState = ImsCallSessionImplBase.State.TERMINATED
+            mState = State.TERMINATED
             die(ImsReasonInfo())
         } catch (e: RemoteException) {
             Rlog.e(tag, "error hanging up", e)
@@ -383,22 +383,22 @@ class HwImsCallSession
     }
 
     override fun terminate(reason: Int) {
-        mState = ImsCallSessionImplBase.State.TERMINATING
+        mState = State.TERMINATING
         try {
             getRilCallId()
             Rlog.d(tag, "terminating call...")
             RilHolder.getRadio(mSlotId)!!.hangup(RilHolder.callback({ radioResponseInfo, _ ->
                 Rlog.d(tag, "got cb for hangup!")
                 if (radioResponseInfo.error != 0) {
-                    mState = ImsCallSessionImplBase.State.INVALID
+                    mState = State.INVALID
                     Rlog.e(tag, "Error hanging up!")
                 } else {
-                    mState = ImsCallSessionImplBase.State.TERMINATED
+                    mState = State.TERMINATED
                     die(ImsReasonInfo())
                 }
             }, mSlotId), rilImsCall!!.index)
             // TODO FIXME: Radio doesn't reply to hangup() so we assume it worked.
-            mState = ImsCallSessionImplBase.State.TERMINATED
+            mState = State.TERMINATED
             die(ImsReasonInfo())
         } catch (e: RemoteException) {
             Rlog.e(tag, "error hanging up", e)
@@ -550,7 +550,7 @@ class HwImsCallSession
 
         private var sCount = 0
 
-        val sCallsLock = java.lang.Object()
+        val sCallsLock = Object()
     }
 
     //TODO RealTimeText
