@@ -139,8 +139,7 @@ class HwImsCallSession
             6 // END
             -> {
                 mState = State.TERMINATED
-                if (listener != null)
-                    die(ImsReasonInfo())
+                die(ImsReasonInfo())
             }
         }
 
