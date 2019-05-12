@@ -160,7 +160,7 @@ class HwImsCallSession
             Log.w(tag, "NI change tech notify to aosp")
 
 
-        if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && call != rilImsCall && listener != null) {
+        if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && call != rilImsCall) {
             listener?.callSessionUpdated(mProfile)
         }
         rilImsCall = call
