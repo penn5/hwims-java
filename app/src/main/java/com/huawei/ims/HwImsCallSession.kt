@@ -99,8 +99,7 @@ class HwImsCallSession
             0 // ACTIVE
             -> if (rilImsCall == null) {
                 mState = State.ESTABLISHED
-                if (listener != null)
-                    listener!!.callSessionInitiated(mProfile)
+                listener?.callSessionInitiated(mProfile)
             } else if (rilImsCall!!.state == 2 || // DIALING
 
                     rilImsCall!!.state == 3 || // ALERTING
@@ -109,38 +108,29 @@ class HwImsCallSession
 
                     rilImsCall!!.state == 5) { // WAITING
                 mState = State.ESTABLISHED
-                if (listener != null)
-                    listener!!.callSessionInitiated(mProfile)
+                listener?.callSessionInitiated(mProfile)
             } else if (rilImsCall!!.state == 1 /* HOLDING */ && !confInProgress) { // HOLDING
-                if (listener != null)
-                    listener!!.callSessionResumed(mProfile)
+                listener?.callSessionResumed(mProfile)
             } else {
                 Rlog.e(tag, "stuff")
             }
             1 // HOLDING
-            -> if (listener != null)
-                listener!!.callSessionHeld(mProfile)
+            -> listener?.callSessionHeld(mProfile)
             2 // DIALING
-            -> if (listener != null)
-                listener!!.callSessionProgressing(ImsStreamMediaProfile())
+            -> listener?.callSessionProgressing(ImsStreamMediaProfile())
             3 // ALERTING
             -> {
                 mState = State.NEGOTIATING
                 if (rilImsCall == null) {
                     Rlog.e(tag, "Alerting an incoming call wtf?")
                 }
-                if (listener != null)
-                    listener!!.callSessionProgressing(ImsStreamMediaProfile())
+                listener?.callSessionProgressing(ImsStreamMediaProfile())
             }
-            4 // INCOMING
-                , 5 // WAITING
+            4/*INCOMING*/, 5 // WAITING
             -> {
             }
             6 // END
-            -> {
-                mState = State.TERMINATED
-                die(ImsReasonInfo())
-            }
+            -> die(ImsReasonInfo())
         }
 
         val subId = HwImsService.instance!!.subscriptionManager
@@ -171,7 +161,7 @@ class HwImsCallSession
 
 
         if (lastState == mState /*state unchanged*/ && call.state != 6 /*END*/ && call != rilImsCall && listener != null) {
-            listener!!.callSessionUpdated(mProfile)
+            listener?.callSessionUpdated(mProfile)
         }
         rilImsCall = call
     }
@@ -181,9 +171,7 @@ class HwImsCallSession
             calls.remove(rilImsCall!!.index)
         awaitingIdFromRIL.remove(mCallee)
         mState = State.TERMINATED
-        if (listener != null) {
-            listener!!.callSessionTerminated(reason)
-        }
+        listener?.callSessionTerminated(reason)
     }
 
     fun notifyEnded() {
@@ -265,7 +253,7 @@ class HwImsCallSession
         try {
             callType = convertAospCallType(profile.callType)
         } catch (e: RuntimeException) {
-            listener!!.callSessionInitiatedFailed(ImsReasonInfo(ImsReasonInfo.CODE_LOCAL_INTERNAL_ERROR, ImsReasonInfo.CODE_UNSPECIFIED, e.message))
+            listener?.callSessionInitiatedFailed(ImsReasonInfo(ImsReasonInfo.CODE_LOCAL_INTERNAL_ERROR, ImsReasonInfo.CODE_UNSPECIFIED, e.message))
             throw e
         }
 
@@ -284,16 +272,16 @@ class HwImsCallSession
                     Rlog.d(tag, "successfully placed call")
                     mInCall = true
                     mState = State.ESTABLISHED
-                    listener!!.callSessionInitiated(profile)
+                    listener?.callSessionInitiated(profile)
                 } else {
                     Rlog.e(tag, "call failed")
                     mState = State.TERMINATED
                     awaitingIdFromRIL.remove(callee, this)
-                    listener!!.callSessionInitiatedFailed(ImsReasonInfo())
+                    listener?.callSessionInitiatedFailed(ImsReasonInfo())
                 }
             }, mSlotId), callInfo)
         } catch (e: RemoteException) {
-            listener!!.callSessionInitiatedFailed(ImsReasonInfo())
+            listener?.callSessionInitiatedFailed(ImsReasonInfo())
             awaitingIdFromRIL.remove(callee, this)
             Rlog.e(tag, "Sending imsDial failed with exception", e)
         }
@@ -311,15 +299,15 @@ class HwImsCallSession
         try {
             RilHolder.getRadio(mSlotId)!!.acceptImsCall(RilHolder.callback({ radioResponseInfo, _ ->
                 if (radioResponseInfo.error != 0) {
-                    listener!!.callSessionInitiatedFailed(ImsReasonInfo())
+                    listener?.callSessionInitiatedFailed(ImsReasonInfo())
                     Rlog.e(tag, "error accepting ims call")
                 } else {
-                    listener!!.callSessionInitiated(mProfile)
+                    listener?.callSessionInitiated(mProfile)
                     mInCall = true
                 }
             }, mSlotId), convertAospCallType(callType))
         } catch (e: RemoteException) {
-            listener!!.callSessionInitiatedFailed(ImsReasonInfo())
+            listener?.callSessionInitiatedFailed(ImsReasonInfo())
             Rlog.e(tag, "failed to accept ims call")
         }
 
@@ -409,9 +397,9 @@ class HwImsCallSession
         try {
             RilHolder.getRadio(mSlotId)!!.switchWaitingOrHoldingAndActive(RilHolder.callback({ radioResponseInfo, _ ->
                 if (radioResponseInfo.error == 0) {
-                    listener!!.callSessionHeld(mProfile)
+                    listener?.callSessionHeld(mProfile)
                 } else {
-                    listener!!.callSessionHoldFailed(ImsReasonInfo())
+                    listener?.callSessionHoldFailed(ImsReasonInfo())
                 }
             }, mSlotId))
         } catch (e: RemoteException) {
@@ -424,14 +412,14 @@ class HwImsCallSession
         try {
             RilHolder.getRadio(mSlotId)!!.switchWaitingOrHoldingAndActive(RilHolder.callback({ radioResponseInfo, _ ->
                 if (radioResponseInfo.error == 0) {
-                    listener!!.callSessionResumed(mProfile)
+                    listener?.callSessionResumed(mProfile)
                 } else {
                     Rlog.e(tag, "failed to resume")
-                    listener!!.callSessionResumeFailed(ImsReasonInfo())
+                    listener?.callSessionResumeFailed(ImsReasonInfo())
                 }
             }, mSlotId))
         } catch (e: RemoteException) {
-            listener!!.callSessionResumeFailed(ImsReasonInfo())
+            listener?.callSessionResumeFailed(ImsReasonInfo())
             Rlog.e(tag, "failed to resume", e)
         }
 
@@ -443,18 +431,18 @@ class HwImsCallSession
                 if (radioResponseInfo.error == 0) {
                     // Do nothing, notifyConfDone will be called by the RadioResponse code (triggered by RadioIndication)
                 } else {
-                    listener!!.callSessionMergeFailed(ImsReasonInfo())
+                    listener?.callSessionMergeFailed(ImsReasonInfo())
                 }
             }, mSlotId))
         } catch (e: RemoteException) {
-            listener!!.callSessionMergeFailed(ImsReasonInfo())
+            listener?.callSessionMergeFailed(ImsReasonInfo())
             Rlog.e(tag, "failed to request conference", e)
         }
 
     }
 
     fun notifyConfDone(call: RILImsCall) {
-        listener!!.callSessionMergeComplete(HwImsCallSession(mSlotId, mProfile, call))
+        listener?.callSessionMergeComplete(HwImsCallSession(mSlotId, mProfile, call))
     }
 
     override fun update(callType: Int, profile: ImsStreamMediaProfile?) {
