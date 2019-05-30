@@ -520,7 +520,7 @@ class HwImsCallSession
     //TODO Video Calling
 
     override fun isMultiparty(): Boolean {
-        return (rilImsCall?.isMpty ?: 1) > 0
+        return (rilImsCall?.isMpty ?: 0) > 0
         //return if (rilImsCall == null) false else rilImsCall!!.isMpty > 0
     }
 
